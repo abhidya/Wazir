@@ -164,7 +164,7 @@ function Settings({ roomCode, onBack }) {
         </p>
         <p>
           <strong>Secrets rely on keeping your playerNumber private.</strong> Anyone who
-          enters another player&apos;s private number can reveal their role on their device.
+          enters another player's private number can reveal their role on their device.
         </p>
         <p>
           Recommend physical private assignment of playerNumbers or single-use printed number slips.

@@ -71,7 +71,7 @@ function Lobby({ onJoinRoom }) {
       <div className="warning-box">
         <strong>⚠️ Privacy Warning</strong>
         <p>Keep your player number secret. Enter the shared room code and your private player number.</p>
-        <p>This app is front-end only. Secrets rely on keeping your playerNumber private. Anyone who enters another player&apos;s private number can reveal their role on their device.</p>
+        <p>This app is front-end only. Secrets rely on keeping your playerNumber private. Anyone who enters another player's private number can reveal their role on their device.</p>
       </div>
 
       <div className="form-group">
