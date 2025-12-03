@@ -1,0 +1,23 @@
+.app {
+  position: relative;
+  min-height: 100vh;
+  padding-bottom: 60px;
+}
+
+.settings-toggle {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  padding: 10px 15px;
+  background: #f8f9fa;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  z-index: 100;
+  transition: background 0.2s;
+}
+
+.settings-toggle:hover {
+  background: #e9ecef;
+}
