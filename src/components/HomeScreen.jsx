@@ -55,12 +55,7 @@ function HomeScreen({ onPlayNow, onJoinRoom, onCreateRoom, onHowToPlay }) {
         </div>
       </div>
 
-      <div className="homescreen-footer">
-        <span>
-          Front-end only &middot; No server &middot; Your secrets stay on your
-          phone
-        </span>
-      </div>
+
     </div>
   );
 }

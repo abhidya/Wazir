@@ -7,9 +7,11 @@ import {
 } from "../utils/storage";
 import "./Lobby.css";
 
-function Lobby({ onJoinRoom, onBack }) {
+function Lobby({ onJoinRoom, onBack, prefilledRoomCode }) {
   const savedData = loadPlayerData();
-  const [roomCode, setRoomCode] = useState(savedData?.roomCode || "");
+  const [roomCode, setRoomCode] = useState(
+    prefilledRoomCode || savedData?.roomCode || ""
+  );
   const [playerNumber, setPlayerNumber] = useState("");
   const [numPlayers, setNumPlayers] = useState("4");
   const [displayName, setDisplayName] = useState(savedData?.displayName || "");
