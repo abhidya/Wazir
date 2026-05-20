@@ -1,20 +1,25 @@
-import { useState } from 'react';
-import { loadPlayerData, savePlayerData, loadRoomState, saveRoomState } from '../utils/storage';
-import './Lobby.css';
+import { useState } from "react";
+import {
+  loadPlayerData,
+  savePlayerData,
+  loadRoomState,
+  saveRoomState,
+} from "../utils/storage";
+import "./Lobby.css";
 
 function Lobby({ onJoinRoom, onBack }) {
   const savedData = loadPlayerData();
-  const [roomCode, setRoomCode] = useState(savedData?.roomCode || '');
-  const [playerNumber, setPlayerNumber] = useState('');
-  const [numPlayers, setNumPlayers] = useState('4');
-  const [displayName, setDisplayName] = useState(savedData?.displayName || '');
-  const [error, setError] = useState('');
+  const [roomCode, setRoomCode] = useState(savedData?.roomCode || "");
+  const [playerNumber, setPlayerNumber] = useState("");
+  const [numPlayers, setNumPlayers] = useState("4");
+  const [displayName, setDisplayName] = useState(savedData?.displayName || "");
+  const [error, setError] = useState("");
 
   const handleJoin = () => {
-    setError('');
+    setError("");
 
     if (!roomCode.trim()) {
-      setError('Please enter a room code.');
+      setError("Please enter a room code.");
       return;
     }
 
@@ -22,12 +27,12 @@ function Lobby({ onJoinRoom, onBack }) {
     const numPlayersNum = parseInt(numPlayers);
 
     if (isNaN(playerNum) || playerNum < 1) {
-      setError('Please enter a valid player number (1 or higher).');
+      setError("Please enter a valid player number (1 or higher).");
       return;
     }
 
     if (isNaN(numPlayersNum) || numPlayersNum < 4) {
-      setError('At least 4 players are required.');
+      setError("At least 4 players are required.");
       return;
     }
 
@@ -40,14 +45,14 @@ function Lobby({ onJoinRoom, onBack }) {
       roomCode: roomCode.trim(),
       playerNumber: playerNum,
       displayName: displayName.trim(),
-      numPlayers: numPlayersNum
+      numPlayers: numPlayersNum,
     });
 
     let roomState = loadRoomState(roomCode.trim());
     if (!roomState) {
       roomState = {
         roundNumber: 1,
-        numPlayers: numPlayersNum
+        numPlayers: numPlayersNum,
       };
       saveRoomState(roomCode.trim(), roomState);
     }
@@ -57,7 +62,7 @@ function Lobby({ onJoinRoom, onBack }) {
       playerNumber: playerNum,
       numPlayers: roomState.numPlayers || numPlayersNum,
       displayName: displayName.trim(),
-      roundNumber: roomState.roundNumber || 1
+      roundNumber: roomState.roundNumber || 1,
     });
   };
 
@@ -73,11 +78,15 @@ function Lobby({ onJoinRoom, onBack }) {
         )}
 
         <h1 className="lobby-title">JOIN ROOM</h1>
-        <p className="lobby-subtitle">Enter the shared room code and your secret identity</p>
+        <p className="lobby-subtitle">
+          Enter the shared room code and your secret identity
+        </p>
 
         <div className="lobby-form">
           <div className="lobby-field">
-            <label htmlFor="roomCode">Room Code <span className="lobby-shared-badge">Shared</span></label>
+            <label htmlFor="roomCode">
+              Room Code <span className="lobby-shared-badge">Shared</span>
+            </label>
             <input
               id="roomCode"
               type="text"
@@ -102,9 +111,7 @@ function Lobby({ onJoinRoom, onBack }) {
           </div>
 
           <div className="lobby-field">
-            <label htmlFor="playerNumber">
-              Your Player Number
-            </label>
+            <label htmlFor="playerNumber">Your Player Number</label>
             <input
               id="playerNumber"
               type="number"
@@ -117,7 +124,10 @@ function Lobby({ onJoinRoom, onBack }) {
           </div>
 
           <div className="lobby-field">
-            <label htmlFor="displayName">Display Name <span className="lobby-optional-badge">Optional</span></label>
+            <label htmlFor="displayName">
+              Display Name{" "}
+              <span className="lobby-optional-badge">Optional</span>
+            </label>
             <input
               id="displayName"
               type="text"
@@ -132,11 +142,12 @@ function Lobby({ onJoinRoom, onBack }) {
 
         {error && <div className="lobby-error">{error}</div>}
 
-        <button className="arcade-btn arcade-btn-gold lobby-join-btn" onClick={handleJoin}>
+        <button
+          className="arcade-btn arcade-btn-gold lobby-join-btn"
+          onClick={handleJoin}
+        >
           JOIN ROOM
         </button>
-
-
       </div>
     </div>
   );

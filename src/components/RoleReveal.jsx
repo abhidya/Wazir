@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
-import './RoleReveal.css';
+import { useState, useRef, useEffect } from "react";
+import "./RoleReveal.css";
 
 const BASE = import.meta.env.BASE_URL;
 
@@ -12,23 +12,23 @@ const ROLE_MEDIA = {
 };
 
 const ROLE_COLORS = {
-  BADSHA: 'gold',
-  BADSHAH: 'gold',
-  WAZIR: 'teal',
-  CHOR: 'crimson',
-  SIPAHI: 'cyan',
+  BADSHA: "gold",
+  BADSHAH: "gold",
+  WAZIR: "teal",
+  CHOR: "crimson",
+  SIPAHI: "cyan",
 };
 
 const ROLE_TIPS = {
-  BADSHA: 'Decide the WAZIR and ask the question aloud.',
-  BADSHAH: 'Decide the WAZIR and ask the question aloud.',
-  WAZIR: 'Detect and identify the CHOR.',
-  CHOR: 'Blend in with SIPAHI. Don\'t get caught.',
-  SIPAHI: 'Observe and help identify the CHOR.',
+  BADSHA: "Decide the WAZIR and ask the question aloud.",
+  BADSHAH: "Decide the WAZIR and ask the question aloud.",
+  WAZIR: "Detect and identify the CHOR.",
+  CHOR: "Blend in with SIPAHI. Don't get caught.",
+  SIPAHI: "Observe and help identify the CHOR.",
 };
 
 function RoleReveal({ role, onReady }) {
-  const [phase, setPhase] = useState('privacy');
+  const [phase, setPhase] = useState("privacy");
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
   const videoRef = useRef(null);
@@ -41,7 +41,7 @@ function RoleReveal({ role, onReady }) {
   }, []);
 
   const handleShowRole = () => {
-    setPhase('video');
+    setPhase("video");
   };
 
   const handleVideoCanPlay = () => {
@@ -49,50 +49,61 @@ function RoleReveal({ role, onReady }) {
   };
 
   const handleVideoEnd = () => {
-    setPhase('card');
+    setPhase("card");
   };
 
   const handleVideoError = () => {
     setVideoFailed(true);
-    setPhase('card');
+    setPhase("card");
   };
 
   const handleSkipVideo = () => {
     setVideoFailed(true);
-    setPhase('card');
+    setPhase("card");
   };
 
   const handleReady = () => {
     onReady();
   };
 
-  const normalizedRole = role === 'BADSHA' ? 'BADSHAH' : role;
+  const normalizedRole = role === "BADSHA" ? "BADSHAH" : role;
   const videoSrc = ROLE_MEDIA[normalizedRole] || ROLE_MEDIA[role];
-  const roleColor = ROLE_COLORS[normalizedRole] || ROLE_COLORS[role] || 'cyan';
-  const roleTip = ROLE_TIPS[normalizedRole] || ROLE_TIPS[role] || '';
+  const roleColor = ROLE_COLORS[normalizedRole] || ROLE_COLORS[role] || "cyan";
+  const roleTip = ROLE_TIPS[normalizedRole] || ROLE_TIPS[role] || "";
 
   return (
     <div className={`rolereveal rolereveal-${roleColor}`}>
-      {phase === 'privacy' && (
+      {phase === "privacy" && (
         <div className="rolereveal-privacy">
           <div className="rolereveal-privacy-icon">
-            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              viewBox="0 0 24 24"
+              width="48"
+              height="48"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
               <path d="M7 11V7a5 5 0 0 1 10 0v4" />
             </svg>
           </div>
           <h2 className="rolereveal-privacy-title">Secret Identity</h2>
           <p className="rolereveal-privacy-text">
-            Hide your screen from others.<br />
+            Hide your screen from others.
+            <br />
             Your role is about to reveal.
           </p>
-          <button className="arcade-btn arcade-btn-gold" onClick={handleShowRole}>
+          <button
+            className="arcade-btn arcade-btn-gold"
+            onClick={handleShowRole}
+          >
             REVEAL MY ROLE
           </button>
         </div>
       )}
 
-      {phase === 'video' && !videoFailed && (
+      {phase === "video" && !videoFailed && (
         <div className="rolereveal-video-container">
           <video
             ref={videoRef}
@@ -118,9 +129,11 @@ function RoleReveal({ role, onReady }) {
         </div>
       )}
 
-      {phase === 'card' && (
+      {phase === "card" && (
         <div className="rolereveal-card">
-          <div className={`rolereveal-card-badge rolereveal-badge-${roleColor}`}>
+          <div
+            className={`rolereveal-card-badge rolereveal-badge-${roleColor}`}
+          >
             {role}
           </div>
           <p className="rolereveal-card-tip">{roleTip}</p>

@@ -1,11 +1,11 @@
 /**
  * Local Storage Module
- * 
+ *
  * Handles persistence of player data and scoreboards.
  * Data is scoped by roomCode for per-room persistence.
  */
 
-const STORAGE_PREFIX = 'wazir_game_';
+const STORAGE_PREFIX = "wazir_game_";
 
 /**
  * Gets the storage key for room-specific data.
@@ -26,9 +26,9 @@ function getPlayerKey(suffix) {
  */
 export function savePlayerData(data) {
   try {
-    localStorage.setItem(getPlayerKey('identity'), JSON.stringify(data));
+    localStorage.setItem(getPlayerKey("identity"), JSON.stringify(data));
   } catch (error) {
-    console.error('Failed to save player data:', error);
+    console.error("Failed to save player data:", error);
   }
 }
 
@@ -37,10 +37,10 @@ export function savePlayerData(data) {
  */
 export function loadPlayerData() {
   try {
-    const data = localStorage.getItem(getPlayerKey('identity'));
+    const data = localStorage.getItem(getPlayerKey("identity"));
     return data ? JSON.parse(data) : null;
   } catch (error) {
-    console.error('Failed to load player data:', error);
+    console.error("Failed to load player data:", error);
     return null;
   }
 }
@@ -50,9 +50,12 @@ export function loadPlayerData() {
  */
 export function saveScoreboard(roomCode, scoreboard) {
   try {
-    localStorage.setItem(getRoomKey(roomCode, 'scoreboard'), JSON.stringify(scoreboard));
+    localStorage.setItem(
+      getRoomKey(roomCode, "scoreboard"),
+      JSON.stringify(scoreboard),
+    );
   } catch (error) {
-    console.error('Failed to save scoreboard:', error);
+    console.error("Failed to save scoreboard:", error);
   }
 }
 
@@ -61,10 +64,10 @@ export function saveScoreboard(roomCode, scoreboard) {
  */
 export function loadScoreboard(roomCode) {
   try {
-    const data = localStorage.getItem(getRoomKey(roomCode, 'scoreboard'));
+    const data = localStorage.getItem(getRoomKey(roomCode, "scoreboard"));
     return data ? JSON.parse(data) : {};
   } catch (error) {
-    console.error('Failed to load scoreboard:', error);
+    console.error("Failed to load scoreboard:", error);
     return {};
   }
 }
@@ -74,9 +77,9 @@ export function loadScoreboard(roomCode) {
  */
 export function saveRoomState(roomCode, state) {
   try {
-    localStorage.setItem(getRoomKey(roomCode, 'state'), JSON.stringify(state));
+    localStorage.setItem(getRoomKey(roomCode, "state"), JSON.stringify(state));
   } catch (error) {
-    console.error('Failed to save room state:', error);
+    console.error("Failed to save room state:", error);
   }
 }
 
@@ -85,10 +88,10 @@ export function saveRoomState(roomCode, state) {
  */
 export function loadRoomState(roomCode) {
   try {
-    const data = localStorage.getItem(getRoomKey(roomCode, 'state'));
+    const data = localStorage.getItem(getRoomKey(roomCode, "state"));
     return data ? JSON.parse(data) : null;
   } catch (error) {
-    console.error('Failed to load room state:', error);
+    console.error("Failed to load room state:", error);
     return null;
   }
 }
@@ -98,9 +101,12 @@ export function loadRoomState(roomCode) {
  */
 export function saveScoringConfig(config) {
   try {
-    localStorage.setItem(getPlayerKey('scoring_config'), JSON.stringify(config));
+    localStorage.setItem(
+      getPlayerKey("scoring_config"),
+      JSON.stringify(config),
+    );
   } catch (error) {
-    console.error('Failed to save scoring config:', error);
+    console.error("Failed to save scoring config:", error);
   }
 }
 
@@ -109,10 +115,10 @@ export function saveScoringConfig(config) {
  */
 export function loadScoringConfig() {
   try {
-    const data = localStorage.getItem(getPlayerKey('scoring_config'));
+    const data = localStorage.getItem(getPlayerKey("scoring_config"));
     return data ? JSON.parse(data) : null;
   } catch (error) {
-    console.error('Failed to load scoring config:', error);
+    console.error("Failed to load scoring config:", error);
     return null;
   }
 }
@@ -123,12 +129,16 @@ export function loadScoringConfig() {
 export function exportScoreboard(roomCode) {
   const scoreboard = loadScoreboard(roomCode);
   const state = loadRoomState(roomCode);
-  return JSON.stringify({
-    roomCode,
-    scoreboard,
-    state,
-    exportedAt: new Date().toISOString()
-  }, null, 2);
+  return JSON.stringify(
+    {
+      roomCode,
+      scoreboard,
+      state,
+      exportedAt: new Date().toISOString(),
+    },
+    null,
+    2,
+  );
 }
 
 /**
@@ -138,7 +148,7 @@ export function importScoreboard(jsonString) {
   try {
     const data = JSON.parse(jsonString);
     if (!data.roomCode) {
-      throw new Error('Invalid scoreboard data: missing roomCode');
+      throw new Error("Invalid scoreboard data: missing roomCode");
     }
     if (data.scoreboard) {
       saveScoreboard(data.roomCode, data.scoreboard);
@@ -148,7 +158,7 @@ export function importScoreboard(jsonString) {
     }
     return { success: true, roomCode: data.roomCode };
   } catch (error) {
-    console.error('Failed to import scoreboard:', error);
+    console.error("Failed to import scoreboard:", error);
     return { success: false, error: error.message };
   }
 }
@@ -158,10 +168,10 @@ export function importScoreboard(jsonString) {
  */
 export function clearRoomData(roomCode) {
   try {
-    localStorage.removeItem(getRoomKey(roomCode, 'scoreboard'));
-    localStorage.removeItem(getRoomKey(roomCode, 'state'));
+    localStorage.removeItem(getRoomKey(roomCode, "scoreboard"));
+    localStorage.removeItem(getRoomKey(roomCode, "state"));
   } catch (error) {
-    console.error('Failed to clear room data:', error);
+    console.error("Failed to clear room data:", error);
   }
 }
 
@@ -176,5 +186,5 @@ export default {
   loadScoringConfig,
   exportScoreboard,
   importScoreboard,
-  clearRoomData
+  clearRoomData,
 };

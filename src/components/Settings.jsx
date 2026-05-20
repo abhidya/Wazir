@@ -1,74 +1,99 @@
-import { useState } from 'react';
-import { getScoringConfig, setScoringConfig, resetScoringConfig } from '../utils/scoring';
-import { exportScoreboard, importScoreboard } from '../utils/storage';
-import './Settings.css';
+import { useState } from "react";
+import {
+  getScoringConfig,
+  setScoringConfig,
+  resetScoringConfig,
+} from "../utils/scoring";
+import { exportScoreboard, importScoreboard } from "../utils/storage";
+import "./Settings.css";
 
 function Settings({ roomCode, onBack }) {
   const [scoring, setScoring] = useState(() => getScoringConfig());
-  const [importText, setImportText] = useState('');
-  const [exportText, setExportText] = useState('');
-  const [message, setMessage] = useState({ type: '', text: '' });
+  const [importText, setImportText] = useState("");
+  const [exportText, setExportText] = useState("");
+  const [message, setMessage] = useState({ type: "", text: "" });
 
   const handleScoringChange = (outcome, role, value) => {
     const newScoring = {
       ...scoring,
       [outcome]: {
         ...scoring[outcome],
-        [role]: parseInt(value) || 0
-      }
+        [role]: parseInt(value) || 0,
+      },
     };
     setScoring(newScoring);
     setScoringConfig(newScoring);
-    setMessage({ type: 'success', text: 'Scoring configuration saved.' });
-    setTimeout(() => setMessage({ type: '', text: '' }), 2000);
+    setMessage({ type: "success", text: "Scoring configuration saved." });
+    setTimeout(() => setMessage({ type: "", text: "" }), 2000);
   };
 
   const handleResetScoring = () => {
     const defaultConfig = resetScoringConfig();
     setScoring(defaultConfig);
-    setMessage({ type: 'success', text: 'Scoring configuration reset to defaults.' });
-    setTimeout(() => setMessage({ type: '', text: '' }), 2000);
+    setMessage({
+      type: "success",
+      text: "Scoring configuration reset to defaults.",
+    });
+    setTimeout(() => setMessage({ type: "", text: "" }), 2000);
   };
 
   const handleExport = () => {
     if (!roomCode) {
-      setMessage({ type: 'error', text: 'No room code specified. Join a room first.' });
+      setMessage({
+        type: "error",
+        text: "No room code specified. Join a room first.",
+      });
       return;
     }
     const json = exportScoreboard(roomCode);
     setExportText(json);
-    setMessage({ type: 'success', text: 'Scoreboard exported. Copy the text below.' });
+    setMessage({
+      type: "success",
+      text: "Scoreboard exported. Copy the text below.",
+    });
   };
 
   const handleCopyExport = () => {
-    navigator.clipboard.writeText(exportText).then(() => {
-      setMessage({ type: 'success', text: 'Copied to clipboard!' });
-      setTimeout(() => setMessage({ type: '', text: '' }), 2000);
-    }).catch(() => {
-      setMessage({ type: 'error', text: 'Failed to copy. Please select and copy manually.' });
-    });
+    navigator.clipboard
+      .writeText(exportText)
+      .then(() => {
+        setMessage({ type: "success", text: "Copied to clipboard!" });
+        setTimeout(() => setMessage({ type: "", text: "" }), 2000);
+      })
+      .catch(() => {
+        setMessage({
+          type: "error",
+          text: "Failed to copy. Please select and copy manually.",
+        });
+      });
   };
 
   const handleImport = () => {
     if (!importText.trim()) {
-      setMessage({ type: 'error', text: 'Please paste scoreboard JSON to import.' });
+      setMessage({
+        type: "error",
+        text: "Please paste scoreboard JSON to import.",
+      });
       return;
     }
 
     const result = importScoreboard(importText);
     if (result.success) {
-      setMessage({ type: 'success', text: `Scoreboard imported for room: ${result.roomCode}` });
-      setImportText('');
+      setMessage({
+        type: "success",
+        text: `Scoreboard imported for room: ${result.roomCode}`,
+      });
+      setImportText("");
     } else {
-      setMessage({ type: 'error', text: `Import failed: ${result.error}` });
+      setMessage({ type: "error", text: `Import failed: ${result.error}` });
     }
   };
 
   const roleColors = {
-    BADSHA: 'var(--role-badshah)',
-    WAZIR: 'var(--role-wazir)',
-    CHOR: 'var(--role-chor)',
-    SIPAHI: 'var(--role-sipahi)',
+    BADSHA: "var(--role-badshah)",
+    WAZIR: "var(--role-wazir)",
+    CHOR: "var(--role-chor)",
+    SIPAHI: "var(--role-sipahi)",
   };
 
   return (
@@ -95,13 +120,15 @@ function Settings({ roomCode, onBack }) {
           <div className="settings-scoring-block">
             <h3>When WAZEER correctly identifies CHOR:</h3>
             <div className="settings-scoring-grid">
-              {['BADSHA', 'WAZIR', 'CHOR', 'SIPAHI'].map(r => (
+              {["BADSHA", "WAZIR", "CHOR", "SIPAHI"].map((r) => (
                 <div key={r} className="settings-scoring-item">
                   <label style={{ color: roleColors[r] }}>{r}</label>
                   <input
                     type="number"
                     value={scoring.wazirCorrect[r]}
-                    onChange={(e) => handleScoringChange('wazirCorrect', r, e.target.value)}
+                    onChange={(e) =>
+                      handleScoringChange("wazirCorrect", r, e.target.value)
+                    }
                   />
                 </div>
               ))}
@@ -111,20 +138,25 @@ function Settings({ roomCode, onBack }) {
           <div className="settings-scoring-block">
             <h3>When WAZEER fails (CHOR escapes):</h3>
             <div className="settings-scoring-grid">
-              {['BADSHA', 'WAZIR', 'CHOR', 'SIPAHI'].map(r => (
+              {["BADSHA", "WAZIR", "CHOR", "SIPAHI"].map((r) => (
                 <div key={r} className="settings-scoring-item">
                   <label style={{ color: roleColors[r] }}>{r}</label>
                   <input
                     type="number"
                     value={scoring.wazirWrong[r]}
-                    onChange={(e) => handleScoringChange('wazirWrong', r, e.target.value)}
+                    onChange={(e) =>
+                      handleScoringChange("wazirWrong", r, e.target.value)
+                    }
                   />
                 </div>
               ))}
             </div>
           </div>
 
-          <button className="arcade-btn arcade-btn-ghost settings-reset-btn" onClick={handleResetScoring}>
+          <button
+            className="arcade-btn arcade-btn-ghost settings-reset-btn"
+            onClick={handleResetScoring}
+          >
             RESET TO DEFAULTS
           </button>
         </section>
@@ -134,16 +166,29 @@ function Settings({ roomCode, onBack }) {
 
           <div className="settings-export">
             <h3>Export</h3>
-            <p>Export current room scoreboard to save or share for reconciliation.</p>
-            {roomCode && <p className="settings-current-room">Current room: <strong>{roomCode}</strong></p>}
-            <button className="arcade-btn arcade-btn-purple" onClick={handleExport}>
+            <p>
+              Export current room scoreboard to save or share for
+              reconciliation.
+            </p>
+            {roomCode && (
+              <p className="settings-current-room">
+                Current room: <strong>{roomCode}</strong>
+              </p>
+            )}
+            <button
+              className="arcade-btn arcade-btn-purple"
+              onClick={handleExport}
+            >
               EXPORT SCOREBOARD
             </button>
 
             {exportText && (
               <div className="settings-export-result">
                 <textarea readOnly value={exportText} rows={6} />
-                <button className="arcade-btn arcade-btn-ghost" onClick={handleCopyExport}>
+                <button
+                  className="arcade-btn arcade-btn-ghost"
+                  onClick={handleCopyExport}
+                >
                   COPY TO CLIPBOARD
                 </button>
               </div>
@@ -159,12 +204,14 @@ function Settings({ roomCode, onBack }) {
               onChange={(e) => setImportText(e.target.value)}
               rows={6}
             />
-            <button className="arcade-btn arcade-btn-teal" onClick={handleImport}>
+            <button
+              className="arcade-btn arcade-btn-teal"
+              onClick={handleImport}
+            >
               IMPORT SCOREBOARD
             </button>
           </div>
         </section>
-
       </div>
     </div>
   );

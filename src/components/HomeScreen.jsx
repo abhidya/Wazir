@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import './HomeScreen.css';
+import { useState } from "react";
+import "./HomeScreen.css";
 
 const BASE = import.meta.env.BASE_URL;
 
@@ -24,13 +24,11 @@ function HomeScreen({ onPlayNow, onJoinRoom, onCreateRoom, onHowToPlay }) {
         alt=""
         onLoad={() => setPosterLoaded(true)}
         onError={() => setPosterLoaded(true)}
-        style={{ display: 'none' }}
+        style={{ display: "none" }}
       />
 
       <div className="homescreen-content">
-        <h1 className="homescreen-title">
-          MERA WAZEER KAUN?
-        </h1>
+        <h1 className="homescreen-title">MERA WAZEER KAUN?</h1>
         <p className="homescreen-subtitle">
           BADSHAH &middot; WAZEER &middot; CHOR &middot; SIPAHI
         </p>
@@ -45,7 +43,10 @@ function HomeScreen({ onPlayNow, onJoinRoom, onCreateRoom, onHowToPlay }) {
           <button className="arcade-btn arcade-btn-teal" onClick={onJoinRoom}>
             JOIN ROOM
           </button>
-          <button className="arcade-btn arcade-btn-purple" onClick={onCreateRoom}>
+          <button
+            className="arcade-btn arcade-btn-purple"
+            onClick={onCreateRoom}
+          >
             CREATE ROOM
           </button>
           <button className="arcade-btn arcade-btn-ghost" onClick={onHowToPlay}>
@@ -55,7 +56,10 @@ function HomeScreen({ onPlayNow, onJoinRoom, onCreateRoom, onHowToPlay }) {
       </div>
 
       <div className="homescreen-footer">
-        <span>Front-end only &middot; No server &middot; Your secrets stay on your phone</span>
+        <span>
+          Front-end only &middot; No server &middot; Your secrets stay on your
+          phone
+        </span>
       </div>
     </div>
   );

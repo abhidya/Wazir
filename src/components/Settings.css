@@ -12,7 +12,11 @@
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse at 60% 80%, rgba(155, 89, 182, 0.06) 0%, transparent 50%),
+    radial-gradient(
+      ellipse at 60% 80%,
+      rgba(155, 89, 182, 0.06) 0%,
+      transparent 50%
+    ),
     var(--color-bg-dark);
   z-index: 0;
 }
@@ -38,7 +42,7 @@
 
 .settings-title {
   margin: 0;
-  font-family: 'Georgia', serif;
+  font-family: "Georgia", serif;
   font-size: 1.6rem;
   font-weight: 800;
   color: var(--color-gold);
@@ -53,7 +57,9 @@
   border-radius: 8px;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: border-color 0.2s, color 0.2s;
+  transition:
+    border-color 0.2s,
+    color 0.2s;
 }
 
 .settings-back-btn:hover {
@@ -186,7 +192,7 @@
   width: 100%;
   padding: 12px;
   font-size: 0.85rem;
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: "SF Mono", "Fira Code", monospace;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--color-glass-border);
   border-radius: 10px;

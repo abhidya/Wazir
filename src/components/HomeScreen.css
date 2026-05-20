@@ -10,7 +10,8 @@
   justify-content: center;
   overflow: hidden;
   background: var(--color-bg-dark);
-  padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+  padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0)
+    env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
 }
 
 /* Full-screen poster background */
@@ -30,7 +31,7 @@
   background: linear-gradient(
     180deg,
     rgba(10, 10, 26, 0.55) 0%,
-    rgba(10, 10, 26, 0.80) 50%,
+    rgba(10, 10, 26, 0.8) 50%,
     rgba(10, 10, 26, 0.95) 100%
   );
   backdrop-filter: blur(6px);
@@ -69,7 +70,7 @@
 
 /* Title with neon gold glow */
 .homescreen-title {
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: "Georgia", "Times New Roman", serif;
   font-size: clamp(2.2rem, 8vw, 3.6rem);
   font-weight: 900;
   color: var(--color-gold);
@@ -119,7 +120,7 @@
   display: block;
   width: 100%;
   padding: 16px 24px;
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: "Georgia", "Times New Roman", serif;
   font-size: 1.15rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -127,7 +128,10 @@
   border: 2px solid transparent;
   border-radius: 12px;
   cursor: pointer;
-  transition: transform 0.12s ease, box-shadow 0.2s ease, background 0.2s ease;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
   -webkit-tap-highlight-color: transparent;
   min-height: 52px;
 }
@@ -137,36 +141,48 @@
 }
 
 .arcade-btn-gold {
-  background: linear-gradient(135deg, #FFD700, #FFA500);
+  background: linear-gradient(135deg, #ffd700, #ffa500);
   color: #1a0a00;
   border-color: var(--color-gold);
-  box-shadow: 0 0 18px rgba(255, 215, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 0 18px rgba(255, 215, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .arcade-btn-gold:hover {
-  box-shadow: 0 0 28px rgba(255, 215, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  box-shadow:
+    0 0 28px rgba(255, 215, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 .arcade-btn-teal {
-  background: linear-gradient(135deg, #00BFA5, #00897B);
+  background: linear-gradient(135deg, #00bfa5, #00897b);
   color: #fff;
   border-color: var(--color-teal);
-  box-shadow: 0 0 14px rgba(0, 191, 165, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  box-shadow:
+    0 0 14px rgba(0, 191, 165, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .arcade-btn-teal:hover {
-  box-shadow: 0 0 22px rgba(0, 191, 165, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 0 22px rgba(0, 191, 165, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .arcade-btn-purple {
-  background: linear-gradient(135deg, #9B59B6, #7B1FA2);
+  background: linear-gradient(135deg, #9b59b6, #7b1fa2);
   color: #fff;
   border-color: var(--color-purple);
-  box-shadow: 0 0 14px rgba(155, 89, 182, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  box-shadow:
+    0 0 14px rgba(155, 89, 182, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .arcade-btn-purple:hover {
-  box-shadow: 0 0 22px rgba(155, 89, 182, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 0 22px rgba(155, 89, 182, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .arcade-btn-ghost {
@@ -212,8 +228,15 @@
 }
 
 @keyframes pulse-glow {
-  0%, 100% { opacity: 0.4; transform: scale(0.8); }
-  50% { opacity: 1; transform: scale(1); }
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* Reduced motion */

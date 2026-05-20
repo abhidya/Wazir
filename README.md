@@ -51,13 +51,11 @@ BADSHA–WAZIR–CHOR–SIPAHI is a social deduction game where players are secr
 1. **Starting a Round:**
    - Tap "Show My Role" to see your secret role
    - Follow the role tips displayed
-   
 2. **Playing the Round:**
    - BADSHA starts by asking the WAZIR a question aloud
    - WAZIR must identify who they think is the CHOR
    - CHOR tries to blend in and avoid detection
    - SIPAHI observes and may help the WAZIR
-   
 3. **Ending a Round:**
    - Perform the physical reveal as a group
    - Decide if WAZIR correctly identified the CHOR
