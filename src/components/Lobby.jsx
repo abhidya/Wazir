@@ -75,14 +75,6 @@ function Lobby({ onJoinRoom, onBack }) {
         <h1 className="lobby-title">JOIN ROOM</h1>
         <p className="lobby-subtitle">Enter the shared room code and your secret identity</p>
 
-        <div className="lobby-warning">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-          </svg>
-          <span>Secret Identity Warning: Keep your player number private. Anyone who enters it can see your role.</span>
-        </div>
-
         <div className="lobby-form">
           <div className="lobby-field">
             <label htmlFor="roomCode">Room Code <span className="lobby-shared-badge">Shared</span></label>
@@ -111,7 +103,7 @@ function Lobby({ onJoinRoom, onBack }) {
 
           <div className="lobby-field">
             <label htmlFor="playerNumber">
-              Your Player Number <span className="lobby-private-badge">Private</span>
+              Your Player Number
             </label>
             <input
               id="playerNumber"
@@ -144,14 +136,7 @@ function Lobby({ onJoinRoom, onBack }) {
           JOIN ROOM
         </button>
 
-        <div className="lobby-info">
-          <strong>How to assign player numbers privately:</strong>
-          <ul>
-            <li>Use folded paper slips with numbers written inside</li>
-            <li>Have players draw numbers from a hat</li>
-            <li>Use a separate app to assign numbers secretly</li>
-          </ul>
-        </div>
+
       </div>
     </div>
   );

@@ -54,7 +54,7 @@ function Settings({ roomCode, onBack }) {
       setMessage({ type: 'error', text: 'Please paste scoreboard JSON to import.' });
       return;
     }
-    
+
     const result = importScoreboard(importText);
     if (result.success) {
       setMessage({ type: 'success', text: `Scoreboard imported for room: ${result.roomCode}` });
@@ -64,112 +64,108 @@ function Settings({ roomCode, onBack }) {
     }
   };
 
+  const roleColors = {
+    BADSHA: 'var(--role-badshah)',
+    WAZIR: 'var(--role-wazir)',
+    CHOR: 'var(--role-chor)',
+    SIPAHI: 'var(--role-sipahi)',
+  };
+
   return (
     <div className="settings">
-      <header className="settings-header">
-        <button className="back-button" onClick={onBack}>← Back</button>
-        <h1>Settings</h1>
-      </header>
+      <div className="settings-bg" />
 
-      {message.text && (
-        <div className={`message ${message.type}`}>
-          {message.text}
-        </div>
-      )}
-
-      {/* Scoring Configuration */}
-      <section className="settings-section">
-        <h2>Scoring Configuration</h2>
-        
-        <div className="scoring-table">
-          <h3>When WAZIR correctly identifies CHOR:</h3>
-          <div className="scoring-grid">
-            {['BADSHA', 'WAZIR', 'CHOR', 'SIPAHI'].map(role => (
-              <div key={role} className="scoring-item">
-                <label>{role}</label>
-                <input
-                  type="number"
-                  value={scoring.wazirCorrect[role]}
-                  onChange={(e) => handleScoringChange('wazirCorrect', role, e.target.value)}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="scoring-table">
-          <h3>When WAZIR fails (CHOR escapes):</h3>
-          <div className="scoring-grid">
-            {['BADSHA', 'WAZIR', 'CHOR', 'SIPAHI'].map(role => (
-              <div key={role} className="scoring-item">
-                <label>{role}</label>
-                <input
-                  type="number"
-                  value={scoring.wazirWrong[role]}
-                  onChange={(e) => handleScoringChange('wazirWrong', role, e.target.value)}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <button className="reset-button" onClick={handleResetScoring}>
-          Reset to Defaults
-        </button>
-      </section>
-
-      {/* Export/Import */}
-      <section className="settings-section">
-        <h2>Export/Import Scoreboard</h2>
-        
-        <div className="export-section">
-          <h3>Export</h3>
-          <p>Export current room scoreboard to save or share with others for reconciliation.</p>
-          {roomCode && <p className="current-room">Current room: <strong>{roomCode}</strong></p>}
-          <button className="export-button" onClick={handleExport}>
-            Export Scoreboard
+      <div className="settings-inner">
+        <header className="settings-header">
+          <button className="settings-back-btn" onClick={onBack}>
+            &larr; Back
           </button>
-          
-          {exportText && (
-            <div className="export-result">
-              <textarea readOnly value={exportText} rows={6} />
-              <button className="copy-button" onClick={handleCopyExport}>
-                Copy to Clipboard
-              </button>
+          <h1 className="settings-title">Settings</h1>
+        </header>
+
+        {message.text && (
+          <div className={`settings-message settings-message-${message.type}`}>
+            {message.text}
+          </div>
+        )}
+
+        <section className="settings-section">
+          <h2>Scoring Configuration</h2>
+
+          <div className="settings-scoring-block">
+            <h3>When WAZEER correctly identifies CHOR:</h3>
+            <div className="settings-scoring-grid">
+              {['BADSHA', 'WAZIR', 'CHOR', 'SIPAHI'].map(r => (
+                <div key={r} className="settings-scoring-item">
+                  <label style={{ color: roleColors[r] }}>{r}</label>
+                  <input
+                    type="number"
+                    value={scoring.wazirCorrect[r]}
+                    onChange={(e) => handleScoringChange('wazirCorrect', r, e.target.value)}
+                  />
+                </div>
+              ))}
             </div>
-          )}
-        </div>
+          </div>
 
-        <div className="import-section">
-          <h3>Import</h3>
-          <p>Paste previously exported scoreboard JSON to restore scores.</p>
-          <textarea
-            placeholder="Paste scoreboard JSON here..."
-            value={importText}
-            onChange={(e) => setImportText(e.target.value)}
-            rows={6}
-          />
-          <button className="import-button" onClick={handleImport}>
-            Import Scoreboard
+          <div className="settings-scoring-block">
+            <h3>When WAZEER fails (CHOR escapes):</h3>
+            <div className="settings-scoring-grid">
+              {['BADSHA', 'WAZIR', 'CHOR', 'SIPAHI'].map(r => (
+                <div key={r} className="settings-scoring-item">
+                  <label style={{ color: roleColors[r] }}>{r}</label>
+                  <input
+                    type="number"
+                    value={scoring.wazirWrong[r]}
+                    onChange={(e) => handleScoringChange('wazirWrong', r, e.target.value)}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <button className="arcade-btn arcade-btn-ghost settings-reset-btn" onClick={handleResetScoring}>
+            RESET TO DEFAULTS
           </button>
-        </div>
-      </section>
+        </section>
 
-      {/* Privacy Info */}
-      <section className="settings-section privacy-section">
-        <h2>Privacy Notice</h2>
-        <p>
-          This app is front-end only. All data is stored locally on your device.
-          No information is sent to any server.
-        </p>
-        <p>
-          <strong>Secrets rely on keeping your playerNumber private.</strong> Anyone who
-          enters another player's private number can reveal their role on their device.
-        </p>
-        <p>
-          Recommend physical private assignment of playerNumbers or single-use printed number slips.
-        </p>
-      </section>
+        <section className="settings-section">
+          <h2>Export / Import Scoreboard</h2>
+
+          <div className="settings-export">
+            <h3>Export</h3>
+            <p>Export current room scoreboard to save or share for reconciliation.</p>
+            {roomCode && <p className="settings-current-room">Current room: <strong>{roomCode}</strong></p>}
+            <button className="arcade-btn arcade-btn-purple" onClick={handleExport}>
+              EXPORT SCOREBOARD
+            </button>
+
+            {exportText && (
+              <div className="settings-export-result">
+                <textarea readOnly value={exportText} rows={6} />
+                <button className="arcade-btn arcade-btn-ghost" onClick={handleCopyExport}>
+                  COPY TO CLIPBOARD
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="settings-import">
+            <h3>Import</h3>
+            <p>Paste previously exported scoreboard JSON to restore scores.</p>
+            <textarea
+              placeholder="Paste scoreboard JSON here..."
+              value={importText}
+              onChange={(e) => setImportText(e.target.value)}
+              rows={6}
+            />
+            <button className="arcade-btn arcade-btn-teal" onClick={handleImport}>
+              IMPORT SCOREBOARD
+            </button>
+          </div>
+        </section>
+
+      </div>
     </div>
   );
 }
