@@ -4,7 +4,7 @@ import {
   saveDisplayName,
   loadDisplayName,
 } from "../utils/storage";
-import { PeerJsRoomTransport } from "../network/PeerJsRoomTransport";
+import { PeerJsRoomTransport, normalizeRoomCode } from "../network/PeerJsRoomTransport";
 import "./OnlineRoomSetup.css";
 
 function OnlineRoomSetup({ mode, prefilledRoom, onConnected, onBack }) {
@@ -15,7 +15,7 @@ function OnlineRoomSetup({ mode, prefilledRoom, onConnected, onBack }) {
 
   const isHost = mode === "host";
   const shareUrl = roomCode
-    ? `${window.location.origin}${import.meta.env.BASE_URL}?mode=peer&room=${roomCode.toUpperCase()}`
+    ? `${window.location.origin}${import.meta.env.BASE_URL}?mode=peer&room=${normalizeRoomCode(roomCode)}`
     : "";
 
   useEffect(() => {
@@ -25,8 +25,9 @@ function OnlineRoomSetup({ mode, prefilledRoom, onConnected, onBack }) {
   const handleSubmit = async () => {
     setError("");
 
-    if (!roomCode.trim()) {
-      setError("Please enter a room code.");
+    const normalized = normalizeRoomCode(roomCode);
+    if (!normalized) {
+      setError("Please enter a valid room code (A-Z, 0-9, -, _).");
       return;
     }
     if (!name.trim()) {
@@ -39,7 +40,7 @@ function OnlineRoomSetup({ mode, prefilledRoom, onConnected, onBack }) {
 
     const clientId = getOrCreateClientId();
     const transport = new PeerJsRoomTransport({
-      roomCode: roomCode.trim(),
+      roomCode: normalized,
       clientId,
       displayName: name.trim(),
       role: isHost ? "host" : "client",
@@ -48,10 +49,10 @@ function OnlineRoomSetup({ mode, prefilledRoom, onConnected, onBack }) {
     try {
       if (isHost) {
         await transport.hostRoom();
-        onConnected(transport, { roomCode: roomCode.trim().toUpperCase(), clientId, displayName: name.trim(), isHost: true });
+        onConnected(transport, { roomCode: normalized, clientId, displayName: name.trim(), isHost: true });
       } else {
         await transport.joinRoom();
-        onConnected(transport, { roomCode: roomCode.trim().toUpperCase(), clientId, displayName: name.trim(), isHost: false });
+        onConnected(transport, { roomCode: normalized, clientId, displayName: name.trim(), isHost: false });
       }
     } catch (err) {
       setError(err.message);
@@ -100,7 +101,7 @@ function OnlineRoomSetup({ mode, prefilledRoom, onConnected, onBack }) {
               id="onlineRoomCode"
               type="text"
               value={roomCode}
-              onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+              onChange={(e) => setRoomCode(e.target.value.toUpperCase().replace(/[^A-Z0-9\-_]/g, ""))}
               placeholder="e.g., MANNY"
               maxLength={20}
               autoComplete="off"

@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { MSG } from "../network/PeerJsRoomTransport";
 import {
   generateRoles,
-  getRoleForPlayer,
   getRoleTip,
 } from "../utils/roleDistribution";
 import {
@@ -44,7 +43,8 @@ function OnlineGame({ transport, onlineInfo, onLeave }) {
   const [lastDeltas, setLastDeltas] = useState(null);
   const [lastOutcome, setLastOutcome] = useState(null);
   const [statusMessage, setStatusMessage] = useState("");
-  const [hostAppliedRound, setHostAppliedRound] = useState(false);
+  const [wazirGuessLocked, setWazirGuessLocked] = useState(false);
+  const [wazirGuesserName, setWazirGuesserName] = useState("");
 
   const stateRef = useRef({});
   useEffect(() => {
@@ -54,40 +54,47 @@ function OnlineGame({ transport, onlineInfo, onLeave }) {
       scoreboardByClientId,
       roster,
       selectedOutcome,
-      hostAppliedRound,
       lastOutcome,
     };
-  }, [phase, roundNumber, scoreboardByClientId, roster, selectedOutcome, hostAppliedRound, lastOutcome]);
+  }, [phase, roundNumber, scoreboardByClientId, roster, selectedOutcome, lastOutcome]);
 
-  const numPlayers = roster.filter((p) => p.connected).length;
-
-  const seatNumberOf = useCallback((cId) => {
-    const entry = roster.find((p) => p.clientId === cId);
-    return entry ? entry.seatNumber : 0;
-  }, [roster]);
+  const connectedPlayers = roster.filter((p) => p.connected);
+  const numPlayers = connectedPlayers.length;
 
   const displayNameOf = useCallback((cId) => {
     const entry = roster.find((p) => p.clientId === cId);
     return entry ? entry.displayName : cId;
   }, [roster]);
 
+  /**
+   * Build a frozen roundRoster: connected players sorted by seatNumber.
+   * Role index = roundRoster index, NOT raw seatNumber - 1.
+   * This fixes the bug where disconnected/removed players cause gaps.
+   */
+  const buildRoundRoster = useCallback((currentRoster) => {
+    const connected = (currentRoster || roster).filter((p) => p.connected);
+    return [...connected].sort((a, b) => a.seatNumber - b.seatNumber);
+  }, [roster]);
+
   const computeRoleForClientId = useCallback(
-    (cId, round) => {
-      const seat = seatNumberOf(cId);
-      if (!seat || numPlayers < 4) return "SIPAHI";
-      return getRoleForPlayer(roomCode, round, numPlayers, seat);
+    (cId, round, currentRoster) => {
+      const roundRoster = buildRoundRoster(currentRoster);
+      const idx = roundRoster.findIndex((p) => p.clientId === cId);
+      if (idx === -1 || roundRoster.length < 4) return "SIPAHI";
+      const roles = generateRoles(roomCode, round, roundRoster.length);
+      return roles[idx];
     },
-    [roomCode, numPlayers, seatNumberOf],
+    [roomCode, buildRoundRoster],
   );
 
   const hostComputedRole = isHost && numPlayers >= 4
     ? computeRoleForClientId(clientId, roundNumber)
     : null;
 
-const myRole = explicitRole || hostComputedRole;
-const roleTip = myRole ? getRoleTip(myRole) : "";
+  const myRole = explicitRole || hostComputedRole;
+  const roleTip = myRole ? getRoleTip(myRole) : "";
 
-const broadcastPublicState = useCallback(
+  const broadcastPublicState = useCallback(
     (overrides = {}) => {
       if (!isHost) return;
       const state = {
@@ -96,7 +103,6 @@ const broadcastPublicState = useCallback(
         hostClientId: clientId,
         roundNumber: stateRef.current.roundNumber,
         phase: stateRef.current.phase,
-        roster: stateRef.current.roster,
         scoreboardByClientId: stateRef.current.scoreboardByClientId,
         ...overrides,
       };
@@ -107,16 +113,19 @@ const broadcastPublicState = useCallback(
   );
 
   const sendPrivateRoles = useCallback(
-    (round) => {
+    (round, currentRoster) => {
       if (!isHost) return;
-      const connectedPlayers = roster.filter((p) => p.connected);
-      for (const player of connectedPlayers) {
+      const roundRoster = buildRoundRoster(currentRoster);
+      const connected = roundRoster.filter((p) => p.connected);
+      for (const player of connected) {
+        const idx = roundRoster.findIndex((p) => p.clientId === player.clientId);
+        if (idx === -1) continue;
+        const roles = generateRoles(roomCode, round, roundRoster.length);
+        const role = roles[idx];
         if (player.isHost) {
-          const hostRole = computeRoleForClientId(player.clientId, round);
-          setExplicitRole(hostRole);
+          setExplicitRole(role);
           continue;
         }
-        const role = computeRoleForClientId(player.clientId, round);
         transport.sendToClient(player.clientId, {
           type: MSG.PRIVATE_ROLE,
           roundNumber: round,
@@ -124,8 +133,11 @@ const broadcastPublicState = useCallback(
         });
       }
     },
-    [isHost, roster, transport, computeRoleForClientId],
+    [isHost, roomCode, transport, buildRoundRoster],
   );
+
+  // ─── Host Phase Control ──────────────────────────────────────────────
+  // Only the host advances phases. Clients update from PUBLIC_STATE messages.
 
   const advanceToPhase = useCallback(
     (newPhase, newRound) => {
@@ -143,28 +155,31 @@ const broadcastPublicState = useCallback(
     [isHost, broadcastPublicState],
   );
 
+  // Role reveal → Bluff: only host advances
   const handleRoleReady = useCallback(() => {
     setRoleRevealed(true);
     if (isHost) {
       advanceToPhase(PHASES.BLUFF);
     }
+    // Clients wait for PUBLIC_STATE with phase=bluff
   }, [isHost, advanceToPhase]);
 
+  // Bluff → WAZIR_GUESS or POST_ROUND: only host advances
   const handleStartGuess = useCallback(() => {
+    if (!isHost) return;
     if (myRole === "WAZIR") {
-      if (isHost) {
-        advanceToPhase(PHASES.WAZIR_GUESS);
-      } else {
-        setPhase(PHASES.WAZIR_GUESS);
-      }
+      advanceToPhase(PHASES.WAZIR_GUESS);
     } else {
-      if (isHost) {
-        advanceToPhase(PHASES.POST_ROUND);
-      } else {
-        setPhase(PHASES.POST_ROUND);
-      }
+      advanceToPhase(PHASES.POST_ROUND);
     }
   }, [myRole, isHost, advanceToPhase]);
+
+  // Host-only: Continue button when non-WAZIR host sees bluff
+  // (All players see bluff; host clicks Continue to advance)
+  const handleHostContinue = useCallback(() => {
+    if (!isHost) return;
+    advanceToPhase(PHASES.POST_ROUND);
+  }, [isHost, advanceToPhase]);
 
   const handleWazirGuessSelect = useCallback((cId) => {
     setWazirGuessClientId(cId);
@@ -178,15 +193,20 @@ const broadcastPublicState = useCallback(
     setShowWazirGuessConfirm(false);
     transport.sendToHost({
       type: MSG.WAZIR_GUESS,
-      guessedClientId: wazirGuessClientId,
+      guessClientId: wazirGuessClientId,
       roundNumber,
     });
+    // If WAZIR is host, advance immediately
     if (isHost) {
+      // Broadcast that WAZIR has locked a guess
+      broadcastPublicState({
+        wazirGuessLocked: true,
+        wazirGuesserClientId: clientId,
+      });
       advanceToPhase(PHASES.POST_ROUND);
-    } else {
-      setPhase(PHASES.POST_ROUND);
     }
-  }, [wazirGuessClientId, roundNumber, transport, isHost, advanceToPhase]);
+    // If WAZIR is client, they wait for PUBLIC_STATE from host
+  }, [wazirGuessClientId, roundNumber, transport, isHost, advanceToPhase, broadcastPublicState, clientId]);
 
   const cancelWazirGuess = useCallback(() => {
     setShowWazirGuessConfirm(false);
@@ -197,12 +217,12 @@ const broadcastPublicState = useCallback(
     setShowConfirmation(true);
   }, []);
 
+  // Host applies points — the ONLY place scores are computed authoritatively
   const handleConfirmPoints = useCallback(() => {
     const outcome = selectedOutcome;
     const currentRound = stateRef.current.roundNumber;
-    const currentRoster = stateRef.current.roster;
-    const connectedPlayers = currentRoster.filter((p) => p.connected);
-    const currentNumPlayers = connectedPlayers.length;
+    const roundRoster = buildRoundRoster(roster);
+    const currentNumPlayers = roundRoster.length;
 
     const roles = generateRoles(roomCode, currentRound, currentNumPlayers);
     const config = getScoringConfig();
@@ -210,8 +230,9 @@ const broadcastPublicState = useCallback(
 
     const deltasByClientId = {};
     const deltasSummary = [];
-    for (const player of connectedPlayers) {
-      const role = roles[player.seatNumber - 1];
+    for (let i = 0; i < roundRoster.length; i++) {
+      const player = roundRoster[i];
+      const role = roles[i];
       const delta = deltaMap[role] || 0;
       deltasByClientId[player.clientId] = delta;
       deltasSummary.push({
@@ -232,40 +253,41 @@ const broadcastPublicState = useCallback(
     setRoleRevealed(false);
     setWazirGuessClientId(null);
     setExplicitRole(null);
-    setHostAppliedRound(true);
+    setWazirGuessLocked(false);
+    setWazirGuesserName("");
     setPhase(PHASES.SCORE_REVEAL);
 
-    if (isHost) {
-      broadcastPublicState({
-        phase: PHASES.SCORE_REVEAL,
-        scoreboardByClientId: newScoreboard,
-        lastOutcome: outcome,
-      });
+    broadcastPublicState({
+      phase: PHASES.SCORE_REVEAL,
+      scoreboardByClientId: newScoreboard,
+      lastOutcome: outcome,
+    });
 
-      transport.broadcast({
-        type: MSG.ROUND_APPLIED,
-        roundNumber: currentRound,
-        outcome,
-        scoreboardByClientId: newScoreboard,
-        deltasByClientId,
-      });
-    }
+    transport.broadcast({
+      type: MSG.ROUND_APPLIED,
+      roundNumber: currentRound,
+      outcome,
+      scoreboardByClientId: newScoreboard,
+      deltasByClientId,
+    });
 
     saveOnlineRoomSnapshot(roomCode, {
       roomCode,
-      roster: currentRoster,
+      roster,
       phase: PHASES.SCORE_REVEAL,
       roundNumber: currentRound,
       scoreboardByClientId: newScoreboard,
     });
-  }, [selectedOutcome, roomCode, isHost, transport, broadcastPublicState]);
+  }, [selectedOutcome, roomCode, roster, transport, broadcastPublicState, buildRoundRoster]);
 
   const handleCancelPoints = useCallback(() => {
     setShowConfirmation(false);
     setSelectedOutcome(null);
   }, []);
 
+  // Host-only: Next Round
   const handleNextRound = useCallback(() => {
+    if (!isHost) return;
     const nextRound = stateRef.current.roundNumber + 1;
     setLastDeltas(null);
     setLastOutcome(null);
@@ -274,56 +296,40 @@ const broadcastPublicState = useCallback(
     setRoleRevealed(false);
     setWazirGuessClientId(null);
     setExplicitRole(null);
-    setHostAppliedRound(false);
+    setWazirGuessLocked(false);
+    setWazirGuesserName("");
 
-    if (isHost) {
-      const connectedPlayers = roster.filter((p) => p.connected);
-      const nextNumPlayers = connectedPlayers.length;
+    broadcastPublicState({
+      phase: PHASES.SECRET_REVEAL,
+      roundNumber: nextRound,
+      scoreboardByClientId: stateRef.current.scoreboardByClientId,
+    });
 
-      const newPublicState = {
-        phase: PHASES.SECRET_REVEAL,
-        roundNumber: nextRound,
-        scoreboardByClientId: stateRef.current.scoreboardByClientId,
-      };
-      broadcastPublicState(newPublicState);
+    sendPrivateRoles(nextRound, roster);
+  }, [isHost, roster, broadcastPublicState, sendPrivateRoles]);
 
-      for (const player of connectedPlayers) {
-        if (player.isHost) continue;
-        const role = getRoleForPlayer(roomCode, nextRound, nextNumPlayers, player.seatNumber);
-        transport.sendToClient(player.clientId, {
-          type: MSG.PRIVATE_ROLE,
-          roundNumber: nextRound,
-          role,
-        });
-      }
-
-        const hostRole = getRoleForPlayer(roomCode, nextRound, nextNumPlayers, seatNumberOf(clientId));
-        setExplicitRole(hostRole);
-      }
-    }, [isHost, roster, roomCode, clientId, transport, broadcastPublicState, seatNumberOf]);
-
+  // Host-only: Skip Round
   const handleSkipRound = useCallback(() => {
+    if (!isHost) return;
     const nextRound = stateRef.current.roundNumber + 1;
     setRoleRevealed(false);
     setWazirGuessClientId(null);
     setExplicitRole(null);
     setRoundNumber(nextRound);
     setPhase(PHASES.SECRET_REVEAL);
-    setHostAppliedRound(false);
+    setWazirGuessLocked(false);
+    setWazirGuesserName("");
 
-    if (isHost) {
-      broadcastPublicState({
-        phase: PHASES.SECRET_REVEAL,
-        roundNumber: nextRound,
-      });
-      transport.broadcast({ type: MSG.SKIP_ROUND, roundNumber: nextRound });
-      sendPrivateRoles(nextRound);
+    broadcastPublicState({
+      phase: PHASES.SECRET_REVEAL,
+      roundNumber: nextRound,
+    });
+    transport.broadcast({ type: MSG.SKIP_ROUND, roundNumber: nextRound });
+    sendPrivateRoles(nextRound, roster);
+  }, [isHost, transport, broadcastPublicState, sendPrivateRoles, roster]);
 
-      const nextNumPlayers = roster.filter((p) => p.connected).length;
-      const hostRole = getRoleForPlayer(roomCode, nextRound, nextNumPlayers, seatNumberOf(clientId));
-      setExplicitRole(hostRole);
-    }
-  }, [isHost, transport, broadcastPublicState, sendPrivateRoles, roster, roomCode, clientId, seatNumberOf]);
+  // ─── Message Handler ──────────────────────────────────────────────────
+  // Clients ONLY update phase from PUBLIC_STATE, ROUND_APPLIED, SKIP_ROUND, PRIVATE_ROLE.
 
   useEffect(() => {
     transport.onMessage((data) => {
@@ -334,33 +340,35 @@ const broadcastPublicState = useCallback(
         if (data.phase) setPhase(data.phase);
         if (data.scoreboardByClientId) setScoreboardByClientId(data.scoreboardByClientId);
         if (data.roster) setRoster(data.roster);
+        if (data.wazirGuessLocked) {
+          setWazirGuessLocked(true);
+          if (data.wazirGuesserClientId) {
+            setWazirGuesserName(displayNameOf(data.wazirGuesserClientId));
+          }
+        }
         if (data.phase === PHASES.SECRET_REVEAL) {
           setRoleRevealed(false);
           setWazirGuessClientId(null);
           setExplicitRole(null);
+          setWazirGuessLocked(false);
+          setWazirGuesserName("");
         }
       }
 
       if (data.type === MSG.PRIVATE_ROLE) {
-        if (data.roundNumber === stateRef.current.roundNumber || data.roundNumber === stateRef.current.roundNumber + 1) {
-          setExplicitRole(data.role);
-        }
+        setExplicitRole(data.role);
       }
 
       if (data.type === MSG.ROUND_APPLIED && !isHost) {
         if (data.scoreboardByClientId) setScoreboardByClientId(data.scoreboardByClientId);
         if (data.outcome) setLastOutcome(data.outcome);
         if (data.deltasByClientId) {
+          const roundRoster = buildRoundRoster();
+          const roles = generateRoles(roomCode, data.roundNumber, roundRoster.length);
           const summary = Object.entries(data.deltasByClientId).map(([cId, delta]) => {
-            const entry = (data.roster || roster).find((p) => p.clientId === cId);
-            const roles = generateRoles(roomCode, data.roundNumber, numPlayers);
-            const seat = entry ? entry.seatNumber : 0;
-            return {
-              clientId: cId,
-              displayName: entry ? entry.displayName : cId,
-              role: seat > 0 ? roles[seat - 1] : "?",
-              delta,
-            };
+            const idx = roundRoster.findIndex((p) => p.clientId === cId);
+            const role = idx >= 0 ? roles[idx] : "?";
+            return { clientId: cId, displayName: displayNameOf(cId), role, delta };
           });
           setLastDeltas(summary);
         }
@@ -368,7 +376,8 @@ const broadcastPublicState = useCallback(
         setRoleRevealed(false);
         setWazirGuessClientId(null);
         setExplicitRole(null);
-        setHostAppliedRound(true);
+        setWazirGuessLocked(false);
+        setWazirGuesserName("");
       }
 
       if (data.type === MSG.SKIP_ROUND && !isHost) {
@@ -377,11 +386,24 @@ const broadcastPublicState = useCallback(
         setRoleRevealed(false);
         setWazirGuessClientId(null);
         setExplicitRole(null);
-        setHostAppliedRound(false);
+        setWazirGuessLocked(false);
+        setWazirGuesserName("");
       }
 
-      if (data.type === MSG.WAZIR_GUESS) {
-        // Other player's WAZIR guess (informational for host)
+      if (data.type === MSG.WAZIR_GUESS && isHost) {
+        // Host received a client's WAZIR guess
+        setWazirGuessLocked(true);
+        setWazirGuesserName(displayNameOf(data.clientId));
+        broadcastPublicState({
+          wazirGuessLocked: true,
+          wazirGuesserClientId: data.clientId,
+          phase: PHASES.POST_ROUND,
+        });
+        setPhase(PHASES.POST_ROUND);
+      }
+
+      if (data.type === MSG.PLAYER_READY) {
+        // Future: track ready state per round. For v1, host has Continue buttons.
       }
     });
 
@@ -398,7 +420,7 @@ const broadcastPublicState = useCallback(
         setStatusMessage("");
       }
     });
-  }, [transport, isHost, roomCode, roster, numPlayers]);
+  }, [transport, isHost, roomCode, buildRoundRoster, displayNameOf, broadcastPublicState]);
 
   const roleColor = ROLE_COLORS[myRole] || "cyan";
 
@@ -417,22 +439,21 @@ const broadcastPublicState = useCallback(
 
   const getDeltasSummary = () => {
     if (!selectedOutcome || numPlayers < 4) return [];
-    const roles = generateRoles(roomCode, roundNumber, numPlayers);
+    const roundRoster = buildRoundRoster();
+    const roles = generateRoles(roomCode, roundNumber, roundRoster.length);
     const config = getScoringConfig();
     const deltaMap = config[selectedOutcome];
-    return roster
-      .filter((p) => p.connected)
-      .map((player) => {
-        const role = roles[player.seatNumber - 1];
-        return {
-          clientId: player.clientId,
-          displayName: player.displayName,
-          role,
-          delta: deltaMap[role] || 0,
-          isYou: player.clientId === clientId,
-        };
-      });
+    return roundRoster.map((player, idx) => ({
+      clientId: player.clientId,
+      displayName: player.displayName,
+      role: roles[idx],
+      delta: deltaMap[roles[idx]] || 0,
+      isYou: player.clientId === clientId,
+    }));
   };
+
+  // Determine if current player is WAZIR this round
+  const isWazir = myRole === "WAZIR";
 
   return (
     <div className="online-game">
@@ -461,6 +482,13 @@ const broadcastPublicState = useCallback(
         <div className="online-game-status">{statusMessage}</div>
       )}
 
+      {wazirGuessLocked && phase !== PHASES.SCORE_REVEAL && (
+        <div className="online-game-guess-locked">
+          {wazirGuesserName} has locked a guess.
+        </div>
+      )}
+
+      {/* SECRET_REVEAL: show RoleReveal if role is available */}
       {phase === PHASES.SECRET_REVEAL && !roleRevealed && myRole && (
         <RoleReveal role={myRole} onReady={handleRoleReady} />
       )}
@@ -474,6 +502,16 @@ const broadcastPublicState = useCallback(
         </div>
       )}
 
+      {phase === PHASES.SECRET_REVEAL && myRole && roleRevealed && !isHost && (
+        <div className="online-game-waiting-role">
+          <p>Waiting for host to start the round...</p>
+          <div className="online-game-waiting-dots">
+            <span /><span /><span />
+          </div>
+        </div>
+      )}
+
+      {/* BLUFF: host controls advancement */}
       {phase === PHASES.BLUFF && (
         <div className="online-game-phase">
           <div className={`online-game-role-indicator online-game-role-${roleColor}`}>
@@ -489,12 +527,22 @@ const broadcastPublicState = useCallback(
               {myRole === "CHOR" && "Blend in. Act like a SIPAHI."}
               {myRole === "SIPAHI" && "Watch and observe. Help the WAZEER."}
             </p>
-            <button
-              className="arcade-btn arcade-btn-gold"
-              onClick={handleStartGuess}
-            >
-              {myRole === "WAZIR" ? "MAKE YOUR GUESS" : "END ROUND"}
-            </button>
+            {isHost && (
+              <button
+                className="arcade-btn arcade-btn-gold"
+                onClick={isWazir ? handleStartGuess : handleHostContinue}
+              >
+                {isWazir ? "MAKE YOUR GUESS" : "END ROUND"}
+              </button>
+            )}
+            {!isHost && (
+              <div className="online-game-waiting-next">
+                <p>Waiting for host to advance...</p>
+                <div className="online-game-waiting-dots">
+                  <span /><span /><span />
+                </div>
+              </div>
+            )}
           </div>
 
           {isHost && (
@@ -510,7 +558,8 @@ const broadcastPublicState = useCallback(
         </div>
       )}
 
-      {phase === PHASES.WAZIR_GUESS && (
+      {/* WAZIR_GUESS: only shown when host is WAZIR and advanced to this phase */}
+      {phase === PHASES.WAZIR_GUESS && isWazir && (
         <div className="online-game-phase">
           <h2 className="online-game-guess-title">WAZEER, WHO IS THE CHOR?</h2>
           <div className="online-game-guess-cards">
@@ -564,6 +613,22 @@ const broadcastPublicState = useCallback(
         </div>
       )}
 
+      {/* WAZIR_GUESS phase but not WAZIR: show waiting */}
+      {phase === PHASES.WAZIR_GUESS && !isWazir && (
+        <div className="online-game-phase">
+          <div className="online-game-waiting-outcome">
+            <h2 className="online-game-outcome-title">WAZEER is making a guess...</h2>
+            <p className="online-game-outcome-subtitle">
+              The WAZEER will identify who they think is the CHOR.
+            </p>
+            <div className="online-game-waiting-dots">
+              <span /><span /><span />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* POST_ROUND: host selects outcome, clients wait */}
       {phase === PHASES.POST_ROUND && !showConfirmation && (
         <div className="online-game-phase">
           {isHost ? (
@@ -607,6 +672,7 @@ const broadcastPublicState = useCallback(
         </div>
       )}
 
+      {/* Confirmation Modal (host only) */}
       {showConfirmation && (
         <div className="modal-overlay" onClick={handleCancelPoints}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -658,6 +724,7 @@ const broadcastPublicState = useCallback(
         </div>
       )}
 
+      {/* SCORE_REVEAL: host controls Next Round */}
       {phase === PHASES.SCORE_REVEAL && (
         <div className="online-game-phase">
           <div className="online-game-score-reveal">
@@ -726,7 +793,7 @@ const broadcastPublicState = useCallback(
                 NEXT ROUND
               </button>
             )}
-            {!isHost && phase === PHASES.SCORE_REVEAL && (
+            {!isHost && (
               <div className="online-game-waiting-next">
                 <p>Waiting for host to start next round...</p>
                 <div className="online-game-waiting-dots">
@@ -738,6 +805,7 @@ const broadcastPublicState = useCallback(
         </div>
       )}
 
+      {/* Mini scoreboard */}
       {phase !== PHASES.SCORE_REVEAL && phase !== PHASES.SECRET_REVEAL && (
         <div className="online-game-scoreboard-mini">
           <h3>Scores</h3>
