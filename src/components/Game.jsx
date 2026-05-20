@@ -198,7 +198,7 @@ function Game({
           <div className="bluff-screen">
             <h2 className="bluff-title">Accuse. Defend. Lie.</h2>
             <p className="bluff-subtitle">
-              {role === "BADSHA" && "Ask the WAZEER a question aloud."}
+              {role === "BADSHA" && "Ask for the WAZEER! Mera Wazeer Kaun!"}
               {role === "WAZIR" && "Listen carefully. Who is the CHOR?"}
               {role === "CHOR" && "Blend in. Act like a SIPAHI."}
               {role === "SIPAHI" && "Watch and observe. Help the WAZEER."}

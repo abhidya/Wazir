@@ -20,20 +20,24 @@ function App() {
   const [gameData, setGameData] = useState(null);
   const [showLobby, setShowLobby] = useState(false);
   const [lobbyMode, setLobbyMode] = useState("join");
+  const [createdRoomCode, setCreatedRoomCode] = useState(null);
   const [showHowToPlay, setShowHowToPlay] = useState(false);
 
   const handlePlayNow = useCallback(() => {
     setLobbyMode("join");
+    setCreatedRoomCode(null);
     setShowLobby(true);
   }, []);
 
   const handleJoinRoom = useCallback(() => {
     setLobbyMode("join");
+    setCreatedRoomCode(null);
     setShowLobby(true);
   }, []);
 
   const handleCreateRoom = useCallback(() => {
     setLobbyMode("create");
+    setCreatedRoomCode(generateRoomCode());
     setShowLobby(true);
   }, []);
 
