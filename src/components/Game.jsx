@@ -94,10 +94,6 @@ function Game({
     setShowWazirGuessConfirm(false);
   };
 
-  const handleEndRound = () => {
-    setPhase(PHASES.POST_ROUND);
-  };
-
   const handleOutcomeSelect = (outcome) => {
     setSelectedOutcome(outcome);
     setShowConfirmation(true);

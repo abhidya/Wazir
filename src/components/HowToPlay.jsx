@@ -1,4 +1,3 @@
-import { useState } from "react";
 import "./HowToPlay.css";
 
 function HowToPlay({ onClose }) {

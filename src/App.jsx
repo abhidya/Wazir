@@ -94,9 +94,9 @@ function App() {
         <Lobby
           onJoinRoom={handleLobbyJoin}
           onBack={handleLobbyBack}
-          prefilledRoomCode={
-            lobbyMode === "create" ? generateRoomCode() : undefined
-          }
+        prefilledRoomCode={
+          lobbyMode === "create" ? createdRoomCode : undefined
+        }
         />
       )}
 

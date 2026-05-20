@@ -1,83 +1,74 @@
-# BADSHA–WAZIR–CHOR–SIPAHI Game
+# MERA WAZEER KAUN?
 
-A front-end only implementation of the classic Indian party game. No backend, no network - all game logic runs locally on each player's device.
+A cinematic front-end party game — the classic Indian social deduction game BADSHA–WAZIR–CHOR–SIPAHI, reimagined with neon Mughal/arcade aesthetics. No backend, no network — all game logic runs locally on each player's device.
+
+**Live:** [abhidya.github.io/Wazir](https://abhidya.github.io/Wazir/)
 
 ## About the Game
 
-BADSHA–WAZIR–CHOR–SIPAHI is a social deduction game where players are secretly assigned roles:
+Players are secretly assigned roles:
 
-- **BADSHA** (King): Decides the WAZIR and asks the question aloud
-- **WAZIR** (Minister): Must detect and identify the CHOR
-- **CHOR** (Thief): Must blend in with SIPAHI and avoid detection
-- **SIPAHI** (Soldier): Observes and helps identify the CHOR
+| Role | Icon Color | Mission |
+|------|-----------|---------|
+| **BADSHAH** (King) | 🟡 Gold | Asks the WAZIR to identify the CHOR |
+| **WAZIR** (Minister) | 🟢 Teal | Detect and identify the CHOR |
+| **CHOR** (Thief) | 🔴 Crimson | Blend in with SIPAHI — don't get caught |
+| **SIPAHI** (Soldier) | 🔵 Cyan | Observe and help identify the CHOR |
 
-## How It Works
+## Game Flow
 
-1. All players enter the same **Room Code** on their phones
-2. Each player privately enters their **Player Number** (assigned via paper slips, hat draw, etc.)
-3. The app deterministically assigns roles based on the room code and round number
-4. Each phone only shows its own player's role
-5. After the group reveals and decides the winner, each player taps the outcome on their phone
-6. Scores are tracked locally on each device
+1. **Home Screen** — Title screen with PLAY NOW / JOIN ROOM / CREATE ROOM / HOW TO PLAY
+2. **Lobby** — Enter room code, player number, display name. CREATE ROOM auto-generates a code.
+3. **Role Reveal** — Privacy warning → cinematic role-specific video → role card with tip → "I'm Ready"
+4. **Bluff Phase** — Role-specific instructions displayed
+5. **WAZIR Guess** — WAZIR picks who they think is the CHOR via player number grid
+6. **Outcome** — Group decides: WAZIR caught the CHOR, or CHOR escaped
+7. **Score Reveal** — Headline, point deltas, ranked scoreboard with crown for leader
 
 ## Privacy & Security
 
-⚠️ **Important Privacy Notice:**
+> **Important:** This app is **front-end only** — no data is sent to any server.
 
-- This app is **front-end only** - no data is sent to any server
 - **Secrets rely on keeping your player number private**
 - Anyone who enters another player's number can see their role
 - Use physical methods to assign player numbers privately (paper slips, hat draw, etc.)
+- Scores are stored in localStorage on each device only
 
-## Setup Instructions
+## Media Assets
 
-### For Players
+Video and image assets live in `public/media/` and are referenced via `import.meta.env.BASE_URL` so they work under the `/Wazir/` GitHub Pages base path.
 
-1. Open the app on all participating devices
-2. Choose a shared **Room Code** (e.g., "GAME123")
-3. Decide on the number of players (minimum 4)
-4. **Privately** assign player numbers 1 through N:
-   - Use folded paper slips with numbers
-   - Draw numbers from a hat
-   - Any other private method
-5. Each player enters:
-   - The shared room code
-   - Their private player number
-   - Optional display name
-6. Tap "Join Room" to enter the game
+| File | Purpose |
+|------|---------|
+| `home-poster.png` | Home screen background |
+| `intro.mp4` | Intro/attract loop video |
+| `role-badshah.mp4` | BADSHAH role reveal video |
+| `role-wazir.mp4` | WAZIR role reveal video |
+| `role-chor.mp4` | CHOR role reveal video |
+| `role-sipahi.mp4` | SIPAHI role reveal video |
 
-### During the Game
+To replace an asset, overwrite the file in `public/media/` with the same name. Videos should be short (5–10s), muted-compatible, and mobile-optimized (720p recommended).
 
-1. **Starting a Round:**
-   - Tap "Show My Role" to see your secret role
-   - Follow the role tips displayed
-2. **Playing the Round:**
-   - BADSHA starts by asking the WAZIR a question aloud
-   - WAZIR must identify who they think is the CHOR
-   - CHOR tries to blend in and avoid detection
-   - SIPAHI observes and may help the WAZIR
-3. **Ending a Round:**
-   - Perform the physical reveal as a group
-   - Decide if WAZIR correctly identified the CHOR
-   - **Each player** taps the outcome on their phone:
-     - "WAZIR succeeded" if CHOR was caught
-     - "CHOR succeeded" if CHOR escaped
-   - Confirm the point changes
+## Scoring (Default)
 
-4. **Scoring (Default):**
-   - WAZIR correct: WAZIR +5, BADSHA +3, SIPAHI +1, CHOR +0
-   - WAZIR wrong: CHOR +6, WAZIR -1, BADSHA +0, SIPAHI +0
+| Outcome | BADSHAH | WAZIR | CHOR | SIPAHI |
+|---------|---------|-------|------|--------|
+| WAZIR correct | +3 | +5 | +0 | +1 |
+| CHOR escaped | +0 | −1 | +6 | +0 |
 
-5. **If a round is aborted** (e.g., accidental role reveal):
-   - Tap "Skip Round (Aborted)" to move to the next round without scoring
+Scoring is configurable in Settings.
 
 ## Features
 
-- **Deterministic Roles**: Same room code + round = same role assignment across all devices
-- **Local Scoring**: Each phone tracks its own scoreboard
-- **Export/Import**: Save and restore scoreboard data via JSON
-- **Configurable Scoring**: Customize point values in Settings
-- **No Network Required**: Works completely offline
+- **Deterministic Roles** — Same room code + round = same role assignment across all devices
+- **Cinematic Role Reveal** — Role-specific video playback with skip/fallback for autoplay failures
+- **Phase State Machine** — Structured round flow: reveal → bluff → guess → outcome → scores
+- **Arcade Scoreboard** — Ranked players, animated point deltas, crown for leader
+- **Local Scoring** — Each phone tracks its own scoreboard
+- **Export/Import** — Save and restore scoreboard data via JSON
+- **Configurable Scoring** — Customize point values in Settings
+- **No Network Required** — Works completely offline
+- **Mobile-First** — Safe-area padding, tap-friendly buttons, `prefers-reduced-motion` support
 
 ## Development
 
@@ -106,6 +97,39 @@ npm run preview
 npm run lint
 ```
 
+### Deploying to GitHub Pages
+
+The app is configured with `base: '/Wazir/'` in `vite.config.js`. Push to `main` and GitHub Actions deploys from the `dist/` folder.
+
+## Project Structure
+
+```
+src/
+├── App.jsx              # Screen routing (home, lobby, game, settings)
+├── App.css              # App-level layout
+├── index.css            # Design tokens (CSS custom properties) + global styles
+├── main.jsx             # Vite entry point
+├── components/
+│   ├── HomeScreen.jsx   # Cinematic attract/title screen
+│   ├── HomeScreen.css
+│   ├── Lobby.jsx        # Room join/create with prefilled code
+│   ├── Lobby.css
+│   ├── RoleReveal.jsx   # Privacy → video → card reveal flow
+│   ├── RoleReveal.css
+│   ├── Game.jsx         # Phase state machine + gameplay
+│   ├── Game.css
+│   ├── Settings.jsx     # Scoring config, export/import, privacy
+│   ├── Settings.css
+│   ├── HowToPlay.jsx    # Rules modal
+│   └── HowToPlay.css
+├── utils/
+│   ├── roleDistribution.js  # Deterministic role assignment
+│   ├── scoring.js           # Scoring logic
+│   └── storage.js           # localStorage persistence
+public/
+└── media/               # Video/image assets (see Media Assets above)
+```
+
 ## Manual Acceptance Tests
 
 - **T1**: Phones with identical roomCode, roundNumber, and numPlayers compute identical role arrays
@@ -114,6 +138,16 @@ npm run lint
 - **T4**: Export/import scoreboard restores scores correctly
 - **T5**: Reload and re-enter same roomCode + playerNumber restores scoreboard
 - **T6**: Aborted round with incremented roundNumber produces different role distribution
+- **T7**: CREATE ROOM auto-generates a 5-char room code (no ambiguous O/0/I/1)
+- **T8**: Role reveal video plays; skip button and fallback work if autoplay blocked
+- **T9**: Scoreboard ranks players by total score with crown on leader
+
+## Limitations
+
+- **No real-time sync** — Each player operates their phone independently; outcomes must be tapped on every device
+- **Privacy depends on physical security** — Player numbers are the only secret; protect them
+- **No cross-device score reconciliation** — Scores are local-only per device
+- **Video autoplay** — May be blocked by some browsers; skip button provided as fallback
 
 ## License
 
