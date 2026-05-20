@@ -63,10 +63,28 @@ function HowToPlay({ onClose }) {
           </div>
         </div>
 
-        <div className="howtoplay-privacy">
-          This app is front-end only. No data leaves your phone. Secrets rely on
-          keeping your player number private.
-        </div>
+  <div className="howtoplay-section">
+    <h3>Online Sync Mode</h3>
+    <ol>
+      <li>One player taps CREATE ONLINE ROOM and picks a room code + their name</li>
+      <li>Share the room code or link with friends</li>
+      <li>Others tap JOIN ONLINE ROOM, enter the code + their name</li>
+      <li>Host taps START GAME once 4+ players are connected</li>
+      <li>Each player sees only their own role on their screen</li>
+      <li>WAZEER taps a player name to accuse them (synced to all)</li>
+      <li>Host records the round outcome — scores sync automatically</li>
+      <li>Host advances to next round when ready</li>
+    </ol>
+    <p className="howtoplay-online-note">
+      Online Sync uses peer-to-peer connections. No server needed.
+      If the host disconnects, scores are frozen.
+    </p>
+  </div>
+
+  <div className="howtoplay-privacy">
+    This app is front-end only. No data leaves your phone. Secrets rely on
+    keeping your player number private.
+  </div>
 
         <button className="arcade-btn arcade-btn-gold" onClick={onClose}>
           GOT IT

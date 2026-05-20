@@ -175,16 +175,103 @@ export function clearRoomData(roomCode) {
   }
 }
 
+// ─── Online Mode Storage ──────────────────────────────────────────────
+
+export function saveGameMode(mode) {
+  try {
+    localStorage.setItem(getPlayerKey("game_mode"), mode);
+  } catch (error) {
+    console.error("Failed to save game mode:", error);
+  }
+}
+
+export function loadGameMode() {
+  try {
+    return localStorage.getItem(getPlayerKey("game_mode")) || "manual";
+  } catch (error) {
+    console.error("Failed to load game mode:", error);
+    return "manual";
+  }
+}
+
+export function getOrCreateClientId() {
+  try {
+    let id = localStorage.getItem(getPlayerKey("client_id"));
+    if (!id) {
+      id = `c_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+      localStorage.setItem(getPlayerKey("client_id"), id);
+    }
+    return id;
+  } catch (error) {
+    console.error("Failed to get/create client ID:", error);
+    return `c_${Date.now().toString(36)}_fallback`;
+  }
+}
+
+export function saveDisplayName(name) {
+  try {
+    localStorage.setItem(getPlayerKey("display_name"), name);
+  } catch (error) {
+    console.error("Failed to save display name:", error);
+  }
+}
+
+export function loadDisplayName() {
+  try {
+    return localStorage.getItem(getPlayerKey("display_name")) || "";
+  } catch (error) {
+    console.error("Failed to load display name:", error);
+    return "";
+  }
+}
+
+export function saveOnlineRoomSnapshot(roomCode, snapshot) {
+  try {
+    localStorage.setItem(
+      getRoomKey(roomCode, "online_snapshot"),
+      JSON.stringify(snapshot),
+    );
+  } catch (error) {
+    console.error("Failed to save online room snapshot:", error);
+  }
+}
+
+export function loadOnlineRoomSnapshot(roomCode) {
+  try {
+    const data = localStorage.getItem(getRoomKey(roomCode, "online_snapshot"));
+    return data ? JSON.parse(data) : null;
+  } catch (error) {
+    console.error("Failed to load online room snapshot:", error);
+    return null;
+  }
+}
+
+export function clearOnlineRoomSnapshot(roomCode) {
+  try {
+    localStorage.removeItem(getRoomKey(roomCode, "online_snapshot"));
+  } catch (error) {
+    console.error("Failed to clear online room snapshot:", error);
+  }
+}
+
 export default {
-  savePlayerData,
-  loadPlayerData,
-  saveScoreboard,
-  loadScoreboard,
-  saveRoomState,
-  loadRoomState,
-  saveScoringConfig,
-  loadScoringConfig,
-  exportScoreboard,
-  importScoreboard,
-  clearRoomData,
+savePlayerData,
+loadPlayerData,
+saveScoreboard,
+loadScoreboard,
+saveRoomState,
+loadRoomState,
+saveScoringConfig,
+loadScoringConfig,
+exportScoreboard,
+importScoreboard,
+clearRoomData,
+saveGameMode,
+loadGameMode,
+getOrCreateClientId,
+saveDisplayName,
+loadDisplayName,
+saveOnlineRoomSnapshot,
+loadOnlineRoomSnapshot,
+clearOnlineRoomSnapshot,
 };

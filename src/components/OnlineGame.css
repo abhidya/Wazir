@@ -1,0 +1,431 @@
+.online-game {
+  position: relative;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px 16px;
+  padding-top: max(20px, env(safe-area-inset-top));
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+  min-height: 100vh;
+  min-height: 100dvh;
+  box-sizing: border-box;
+}
+
+.online-game-bg {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 90%, rgba(0, 191, 165, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 10%, rgba(155, 89, 182, 0.06) 0%, transparent 50%),
+    var(--color-bg-dark);
+  z-index: 0;
+}
+
+.online-game > *:not(.online-game-bg) {
+  position: relative;
+  z-index: 1;
+}
+
+.online-game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-glass-border);
+}
+
+.online-game-info {
+  display: flex;
+  gap: 12px;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.5);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.online-game-info strong {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.online-game-sync-badge {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--color-teal);
+  background: rgba(0, 191, 165, 0.1);
+  border: 1px solid rgba(0, 191, 165, 0.2);
+  padding: 2px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.08em;
+}
+
+.online-game-leave-btn {
+  padding: 8px 16px;
+  background: rgba(239, 83, 80, 0.15);
+  color: var(--color-crimson);
+  border: 1px solid rgba(239, 83, 80, 0.25);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.online-game-leave-btn:hover {
+  background: rgba(239, 83, 80, 0.25);
+}
+
+.online-game-player-name {
+  text-align: center;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 16px;
+}
+
+.online-game-player-name strong {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.online-game-host-tag {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--color-gold);
+  background: rgba(255, 215, 0, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+  letter-spacing: 0.06em;
+}
+
+.online-game-status {
+  padding: 12px;
+  background: rgba(255, 215, 0, 0.06);
+  border: 1px solid rgba(255, 215, 0, 0.12);
+  border-radius: 10px;
+  color: rgba(255, 215, 0, 0.8);
+  font-size: 0.88rem;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.online-game-phase {
+  margin-bottom: 24px;
+}
+
+.online-game-role-indicator {
+  text-align: center;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
+.online-game-role-gold {
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  color: var(--color-gold);
+}
+
+.online-game-role-teal {
+  background: rgba(0, 191, 165, 0.1);
+  border: 1px solid rgba(0, 191, 165, 0.2);
+  color: var(--color-teal);
+}
+
+.online-game-role-crimson {
+  background: rgba(239, 83, 80, 0.1);
+  border: 1px solid rgba(239, 83, 80, 0.2);
+  color: var(--color-crimson);
+}
+
+.online-game-role-cyan {
+  background: rgba(0, 229, 255, 0.1);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  color: var(--color-cyan);
+}
+
+.online-game-role-tip {
+  text-align: center;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 20px;
+  font-size: 0.95rem;
+}
+
+.online-game-bluff {
+  text-align: center;
+  padding: 40px 16px;
+}
+
+.online-game-bluff-title {
+  font-family: "Georgia", serif;
+  font-size: clamp(1.6rem, 6vw, 2.4rem);
+  font-weight: 900;
+  color: var(--color-gold);
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+  margin: 0 0 12px;
+  animation: bluff-pulse 2.5s ease-in-out infinite alternate;
+}
+
+.online-game-bluff-subtitle {
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 32px;
+}
+
+.online-game-round-controls {
+  text-align: center;
+  margin-top: 16px;
+}
+
+.online-game-guess-title {
+  font-family: "Georgia", serif;
+  font-size: clamp(1.3rem, 5vw, 1.8rem);
+  font-weight: 800;
+  color: var(--color-teal);
+  text-shadow: 0 0 16px rgba(0, 191, 165, 0.3);
+  text-align: center;
+  margin: 0 0 24px;
+}
+
+.online-game-guess-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.online-game-guess-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 10px;
+  background: var(--color-bg-surface);
+  border: 2px solid var(--color-glass-border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 72px;
+}
+
+.online-game-guess-card:active {
+  transform: scale(0.95);
+}
+
+.online-game-guess-card-selected {
+  border-color: var(--color-teal);
+  box-shadow: 0 0 16px rgba(0, 191, 165, 0.3);
+  background: rgba(0, 191, 165, 0.08);
+}
+
+.online-game-guess-card-name {
+  font-family: "Georgia", serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  word-break: break-word;
+}
+
+.online-game-guess-disclaimer {
+  text-align: center;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.35);
+  margin-top: 12px;
+  font-style: italic;
+}
+
+.online-game-outcome-title {
+  font-family: "Georgia", serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--color-gold);
+  text-align: center;
+  text-shadow: 0 0 16px rgba(255, 215, 0, 0.25);
+  margin: 0 0 8px;
+}
+
+.online-game-outcome-subtitle {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.92rem;
+  margin: 0 0 24px;
+}
+
+.online-game-outcome-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.online-game-waiting-outcome,
+.online-game-waiting-next,
+.online-game-waiting-role {
+  text-align: center;
+  padding: 40px 16px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.online-game-waiting-outcome p,
+.online-game-waiting-next p,
+.online-game-waiting-role p {
+  margin: 0 0 12px;
+}
+
+.online-game-waiting-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.online-game-waiting-dots span {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-teal);
+  animation: online-game-dot-pulse 1.4s ease-in-out infinite;
+}
+
+.online-game-waiting-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.online-game-waiting-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes online-game-dot-pulse {
+  0%, 80%, 100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.online-game-sync-note {
+  margin-top: 16px;
+  padding: 10px 12px;
+  background: rgba(0, 191, 165, 0.06);
+  border: 1px solid rgba(0, 191, 165, 0.12);
+  border-radius: 8px;
+  font-size: 0.82rem;
+  color: rgba(0, 191, 165, 0.6);
+  text-align: center;
+}
+
+.online-game-score-reveal {
+  text-align: center;
+}
+
+.online-game-score-deltas {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 24px;
+}
+
+.online-game-scoreboard {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-glass-border);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.online-game-scoreboard-title {
+  font-family: "Georgia", serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--color-gold);
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+  margin: 0 0 16px;
+  letter-spacing: 0.04em;
+}
+
+.online-game-scoreboard-empty {
+  color: rgba(255, 255, 255, 0.35);
+  font-style: italic;
+}
+
+.online-game-scoreboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.online-game-scoreboard-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  animation: scoreboard-slide 0.4s ease-out;
+}
+
+.online-game-scoreboard-item-you {
+  border-color: rgba(255, 215, 0, 0.15);
+  background: rgba(255, 215, 0, 0.04);
+}
+
+.online-game-scoreboard-item-leader {
+  border-color: rgba(255, 215, 0, 0.25);
+  background: rgba(255, 215, 0, 0.06);
+}
+
+.online-game-scoreboard-name {
+  flex: 1;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.online-game-scoreboard-score {
+  font-family: "Georgia", serif;
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: #fff;
+}
+
+.online-game-scoreboard-mini {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-glass-border);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.online-game-scoreboard-mini h3 {
+  margin: 0 0 10px;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.online-game-scores-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .online-game-bluff-title {
+    animation: none;
+  }
+  .online-game-scoreboard-item {
+    animation: none;
+  }
+  .online-game-waiting-dots span {
+    animation: none;
+    opacity: 0.6;
+  }
+}

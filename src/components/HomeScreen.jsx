@@ -3,7 +3,7 @@ import "./HomeScreen.css";
 
 const BASE = import.meta.env.BASE_URL;
 
-function HomeScreen({ onPlayNow, onJoinRoom, onCreateRoom, onHowToPlay }) {
+function HomeScreen({ onPlayNow, onJoinRoom, onCreateRoom, onHowToPlay, onCreateOnlineRoom, onJoinOnlineRoom }) {
   const [posterLoaded, setPosterLoaded] = useState(false);
 
   return (
@@ -36,23 +36,40 @@ function HomeScreen({ onPlayNow, onJoinRoom, onCreateRoom, onHowToPlay }) {
           Play with friends. Bluff. Accuse. Survive. Trust no one.
         </p>
 
-        <div className="homescreen-buttons">
-          <button className="arcade-btn arcade-btn-gold" onClick={onPlayNow}>
-            PLAY NOW
-          </button>
-          <button className="arcade-btn arcade-btn-teal" onClick={onJoinRoom}>
-            JOIN ROOM
-          </button>
-          <button
-            className="arcade-btn arcade-btn-purple"
-            onClick={onCreateRoom}
-          >
-            CREATE ROOM
-          </button>
-          <button className="arcade-btn arcade-btn-ghost" onClick={onHowToPlay}>
-            HOW TO PLAY
-          </button>
+      <div className="homescreen-buttons">
+        <button className="arcade-btn arcade-btn-gold" onClick={onPlayNow}>
+          PLAY NOW
+        </button>
+        <button className="arcade-btn arcade-btn-teal" onClick={onJoinRoom}>
+          JOIN ROOM
+        </button>
+        <button
+          className="arcade-btn arcade-btn-purple"
+          onClick={onCreateRoom}
+        >
+          CREATE ROOM
+        </button>
+        <div className="homescreen-divider">
+          <span className="homescreen-divider-line" />
+          <span className="homescreen-divider-text">ONLINE</span>
+          <span className="homescreen-divider-line" />
         </div>
+        <button
+          className="arcade-btn arcade-btn-teal"
+          onClick={onCreateOnlineRoom}
+        >
+          CREATE ONLINE ROOM
+        </button>
+        <button
+          className="arcade-btn arcade-btn-purple"
+          onClick={onJoinOnlineRoom}
+        >
+          JOIN ONLINE ROOM
+        </button>
+        <button className="arcade-btn arcade-btn-ghost" onClick={onHowToPlay}>
+          HOW TO PLAY
+        </button>
+      </div>
       </div>
 
 

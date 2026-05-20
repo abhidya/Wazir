@@ -114,6 +114,27 @@
   margin: 0 auto;
 }
 
+.homescreen-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 6px 0;
+}
+
+.homescreen-divider-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.homescreen-divider-text {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-teal);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
 /* ─── Arcade Button System ─── */
 
 .arcade-btn {

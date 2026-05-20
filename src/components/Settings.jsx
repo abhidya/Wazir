@@ -4,13 +4,19 @@ import {
   setScoringConfig,
   resetScoringConfig,
 } from "../utils/scoring";
-import { exportScoreboard, importScoreboard } from "../utils/storage";
+import {
+  exportScoreboard,
+  importScoreboard,
+  loadGameMode,
+  saveGameMode,
+} from "../utils/storage";
 import "./Settings.css";
 
 function Settings({ roomCode, onBack }) {
   const [scoring, setScoring] = useState(() => getScoringConfig());
   const [importText, setImportText] = useState("");
   const [exportText, setExportText] = useState("");
+  const [gameMode, setGameMode] = useState(() => loadGameMode());
   const [message, setMessage] = useState({ type: "", text: "" });
 
   const handleScoringChange = (outcome, role, value) => {
@@ -89,6 +95,16 @@ function Settings({ roomCode, onBack }) {
     }
   };
 
+  const handleGameModeChange = (mode) => {
+    setGameMode(mode);
+    saveGameMode(mode);
+    setMessage({
+      type: "success",
+      text: `Game mode set to ${mode === "peer" ? "Online Sync" : "Manual/Offline"}.`,
+    });
+    setTimeout(() => setMessage({ type: "", text: "" }), 2000);
+  };
+
   const roleColors = {
     BADSHA: "var(--role-badshah)",
     WAZIR: "var(--role-wazir)",
@@ -161,57 +177,86 @@ function Settings({ roomCode, onBack }) {
           </button>
         </section>
 
-        <section className="settings-section">
-          <h2>Export / Import Scoreboard</h2>
+      <section className="settings-section">
+        <h2>Export / Import Scoreboard</h2>
 
-          <div className="settings-export">
-            <h3>Export</h3>
-            <p>
-              Export current room scoreboard to save or share for
-              reconciliation.
+        <div className="settings-export">
+          <h3>Export</h3>
+          <p>
+            Export current room scoreboard to save or share for
+            reconciliation.
+          </p>
+          {roomCode && (
+            <p className="settings-current-room">
+              Current room: <strong>{roomCode}</strong>
             </p>
-            {roomCode && (
-              <p className="settings-current-room">
-                Current room: <strong>{roomCode}</strong>
-              </p>
-            )}
-            <button
-              className="arcade-btn arcade-btn-purple"
-              onClick={handleExport}
-            >
-              EXPORT SCOREBOARD
-            </button>
+          )}
+          <button
+            className="arcade-btn arcade-btn-purple"
+            onClick={handleExport}
+          >
+            EXPORT SCOREBOARD
+          </button>
 
-            {exportText && (
-              <div className="settings-export-result">
-                <textarea readOnly value={exportText} rows={6} />
-                <button
-                  className="arcade-btn arcade-btn-ghost"
-                  onClick={handleCopyExport}
-                >
-                  COPY TO CLIPBOARD
-                </button>
-              </div>
-            )}
-          </div>
+          {exportText && (
+            <div className="settings-export-result">
+              <textarea readOnly value={exportText} rows={6} />
+              <button
+                className="arcade-btn arcade-btn-ghost"
+                onClick={handleCopyExport}
+              >
+                COPY TO CLIPBOARD
+              </button>
+            </div>
+          )}
+        </div>
 
-          <div className="settings-import">
-            <h3>Import</h3>
-            <p>Paste previously exported scoreboard JSON to restore scores.</p>
-            <textarea
-              placeholder="Paste scoreboard JSON here..."
-              value={importText}
-              onChange={(e) => setImportText(e.target.value)}
-              rows={6}
-            />
-            <button
-              className="arcade-btn arcade-btn-teal"
-              onClick={handleImport}
-            >
-              IMPORT SCOREBOARD
-            </button>
+        <div className="settings-import">
+          <h3>Import</h3>
+          <p>Paste previously exported scoreboard JSON to restore scores.</p>
+          <textarea
+            placeholder="Paste scoreboard JSON here..."
+            value={importText}
+            onChange={(e) => setImportText(e.target.value)}
+            rows={6}
+          />
+          <button
+            className="arcade-btn arcade-btn-teal"
+            onClick={handleImport}
+          >
+            IMPORT SCOREBOARD
+          </button>
+        </div>
+      </section>
+
+      <section className="settings-section">
+        <h2>Connectivity / Game Mode</h2>
+        <p className="settings-gamemode-desc">
+          Choose how players interact. Manual/Offline mode works without
+          network. Online Sync mode uses peer-to-peer connections to keep all
+          players in sync.
+        </p>
+        <div className="settings-gamemode-options">
+          <button
+            className={`arcade-btn ${gameMode === "manual" ? "arcade-btn-gold" : "arcade-btn-ghost"} settings-gamemode-btn`}
+            onClick={() => handleGameModeChange("manual")}
+          >
+            MANUAL / OFFLINE
+          </button>
+          <button
+            className={`arcade-btn ${gameMode === "peer" ? "arcade-btn-teal" : "arcade-btn-ghost"} settings-gamemode-btn`}
+            onClick={() => handleGameModeChange("peer")}
+          >
+            ONLINE SYNC
+          </button>
+        </div>
+        {gameMode === "peer" && (
+          <div className="settings-gamemode-note">
+            Online Sync requires all players to have internet access. One
+            player creates a room and others join using the room code.
           </div>
-        </section>
+        )}
+      </section>
       </div>
     </div>
   );

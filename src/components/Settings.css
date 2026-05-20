@@ -222,3 +222,32 @@
 .settings-privacy-section strong {
   color: var(--color-gold);
 }
+
+.settings-gamemode-desc {
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 0 16px;
+  line-height: 1.5;
+}
+
+.settings-gamemode-options {
+  display: flex;
+  gap: 10px;
+}
+
+.settings-gamemode-btn {
+  flex: 1;
+  font-size: 0.9rem !important;
+  padding: 14px 16px !important;
+}
+
+.settings-gamemode-note {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: rgba(0, 191, 165, 0.06);
+  border: 1px solid rgba(0, 191, 165, 0.12);
+  border-radius: 8px;
+  font-size: 0.82rem;
+  color: rgba(0, 191, 165, 0.6);
+  line-height: 1.4;
+}

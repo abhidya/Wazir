@@ -107,6 +107,13 @@
   line-height: 1.5;
 }
 
+.howtoplay-online-note {
+  font-size: 0.82rem;
+  color: rgba(0, 191, 165, 0.7);
+  margin-top: 8px;
+  line-height: 1.4;
+}
+
 .howtoplay-modal .arcade-btn {
   margin-top: 8px;
 }
