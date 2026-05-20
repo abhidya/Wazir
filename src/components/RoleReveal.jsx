@@ -20,8 +20,8 @@ const ROLE_COLORS = {
 };
 
 const ROLE_TIPS = {
-  BADSHA: "Decide the WAZIR and ask the question aloud.",
-  BADSHAH: "Decide the WAZIR and ask the question aloud.",
+  BADSHA: "Ask the WAZIR to identify the CHOR!",
+  BADSHAH: "Ask the WAZIR to identify the CHOR!",
   WAZIR: "Detect and identify the CHOR.",
   CHOR: "Blend in with SIPAHI. Don't get caught.",
   SIPAHI: "Observe and help identify the CHOR.",

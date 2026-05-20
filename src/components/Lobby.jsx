@@ -1,27 +1,22 @@
-import { useState } from "react";
-import {
-  loadPlayerData,
-  savePlayerData,
-  loadRoomState,
-  saveRoomState,
-} from "../utils/storage";
-import "./Lobby.css";
+import { useState } from 'react';
+import { loadPlayerData, savePlayerData, loadRoomState, saveRoomState } from '../utils/storage';
+import './Lobby.css';
 
 function Lobby({ onJoinRoom, onBack, prefilledRoomCode }) {
   const savedData = loadPlayerData();
   const [roomCode, setRoomCode] = useState(
-    prefilledRoomCode || savedData?.roomCode || ""
+    prefilledRoomCode || savedData?.roomCode || ''
   );
-  const [playerNumber, setPlayerNumber] = useState("");
-  const [numPlayers, setNumPlayers] = useState("4");
-  const [displayName, setDisplayName] = useState(savedData?.displayName || "");
-  const [error, setError] = useState("");
+  const [playerNumber, setPlayerNumber] = useState('');
+  const [numPlayers, setNumPlayers] = useState('4');
+  const [displayName, setDisplayName] = useState(savedData?.displayName || '');
+  const [error, setError] = useState('');
 
   const handleJoin = () => {
-    setError("");
+    setError('');
 
     if (!roomCode.trim()) {
-      setError("Please enter a room code.");
+      setError('Please enter a room code.');
       return;
     }
 
@@ -29,12 +24,12 @@ function Lobby({ onJoinRoom, onBack, prefilledRoomCode }) {
     const numPlayersNum = parseInt(numPlayers);
 
     if (isNaN(playerNum) || playerNum < 1) {
-      setError("Please enter a valid player number (1 or higher).");
+      setError('Please enter a valid player number (1 or higher).');
       return;
     }
 
     if (isNaN(numPlayersNum) || numPlayersNum < 4) {
-      setError("At least 4 players are required.");
+      setError('At least 4 players are required.');
       return;
     }
 
@@ -79,10 +74,22 @@ function Lobby({ onJoinRoom, onBack, prefilledRoomCode }) {
           </button>
         )}
 
-        <h1 className="lobby-title">JOIN ROOM</h1>
+        <h1 className="lobby-title">
+          {prefilledRoomCode ? 'CREATE ROOM' : 'JOIN ROOM'}
+        </h1>
         <p className="lobby-subtitle">
-          Enter the shared room code and your secret identity
+          {prefilledRoomCode
+            ? 'Share this room code with your friends, then enter your identity'
+            : 'Enter the shared room code and your secret identity'}
         </p>
+
+        <div className="lobby-warning">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+          <span>Secret Identity Warning: Keep your player number private. Anyone who enters it can see your role.</span>
+        </div>
 
         <div className="lobby-form">
           <div className="lobby-field">
@@ -113,7 +120,9 @@ function Lobby({ onJoinRoom, onBack, prefilledRoomCode }) {
           </div>
 
           <div className="lobby-field">
-            <label htmlFor="playerNumber">Your Player Number</label>
+            <label htmlFor="playerNumber">
+              Your Player Number <span className="lobby-private-badge">Private</span>
+            </label>
             <input
               id="playerNumber"
               type="number"
@@ -127,8 +136,7 @@ function Lobby({ onJoinRoom, onBack, prefilledRoomCode }) {
 
           <div className="lobby-field">
             <label htmlFor="displayName">
-              Display Name{" "}
-              <span className="lobby-optional-badge">Optional</span>
+              Display Name <span className="lobby-optional-badge">Optional</span>
             </label>
             <input
               id="displayName"
@@ -144,12 +152,18 @@ function Lobby({ onJoinRoom, onBack, prefilledRoomCode }) {
 
         {error && <div className="lobby-error">{error}</div>}
 
-        <button
-          className="arcade-btn arcade-btn-gold lobby-join-btn"
-          onClick={handleJoin}
-        >
+        <button className="arcade-btn arcade-btn-gold lobby-join-btn" onClick={handleJoin}>
           JOIN ROOM
         </button>
+
+        <div className="lobby-info">
+          <strong>How to assign player numbers privately:</strong>
+          <ul>
+            <li>Use folded paper slips with numbers written inside</li>
+            <li>Have players draw numbers from a hat</li>
+            <li>Use a separate app to assign numbers secretly</li>
+          </ul>
+        </div>
       </div>
     </div>
   );
