@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { loadPlayerData, savePlayerData, loadRoomState, saveRoomState } from '../utils/storage';
 import './Lobby.css';
 
-function Lobby({ onJoinRoom }) {
+function Lobby({ onJoinRoom, onBack }) {
   const savedData = loadPlayerData();
   const [roomCode, setRoomCode] = useState(savedData?.roomCode || '');
   const [playerNumber, setPlayerNumber] = useState('');
@@ -13,7 +13,6 @@ function Lobby({ onJoinRoom }) {
   const handleJoin = () => {
     setError('');
 
-    // Validate inputs
     if (!roomCode.trim()) {
       setError('Please enter a room code.');
       return;
@@ -37,7 +36,6 @@ function Lobby({ onJoinRoom }) {
       return;
     }
 
-    // Save player data
     savePlayerData({
       roomCode: roomCode.trim(),
       playerNumber: playerNum,
@@ -45,7 +43,6 @@ function Lobby({ onJoinRoom }) {
       numPlayers: numPlayersNum
     });
 
-    // Load or create room state
     let roomState = loadRoomState(roomCode.trim());
     if (!roomState) {
       roomState = {
@@ -66,79 +63,95 @@ function Lobby({ onJoinRoom }) {
 
   return (
     <div className="lobby">
-      <h1>BADSHA–WAZIR–CHOR–SIPAHI</h1>
-      
-      <div className="warning-box">
-        <strong>⚠️ Privacy Warning</strong>
-        <p>Keep your player number secret. Enter the shared room code and your private player number.</p>
-        <p>This app is front-end only. Secrets rely on keeping your playerNumber private. Anyone who enters another player's private number can reveal their role on their device.</p>
-      </div>
+      <div className="lobby-bg" />
 
-      <div className="form-group">
-        <label htmlFor="roomCode">Room Code (shared with all players)</label>
-        <input
-          id="roomCode"
-          type="text"
-          value={roomCode}
-          onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-          placeholder="e.g., GAME123"
-          maxLength={20}
-        />
-      </div>
+      <div className="lobby-glass">
+        {onBack && (
+          <button className="lobby-back-btn" onClick={onBack}>
+            &larr; Back
+          </button>
+        )}
 
-      <div className="form-group">
-        <label htmlFor="numPlayers">Number of Players</label>
-        <input
-          id="numPlayers"
-          type="number"
-          value={numPlayers}
-          onChange={(e) => setNumPlayers(e.target.value)}
-          min="4"
-          max="20"
-        />
-      </div>
+        <h1 className="lobby-title">JOIN ROOM</h1>
+        <p className="lobby-subtitle">Enter the shared room code and your secret identity</p>
 
-      <div className="form-group">
-        <label htmlFor="playerNumber">
-          Your Player Number (keep private!)
-          <span className="private-badge">🔒 Private</span>
-        </label>
-        <input
-          id="playerNumber"
-          type="number"
-          value={playerNumber}
-          onChange={(e) => setPlayerNumber(e.target.value)}
-          min="1"
-          max={numPlayers}
-          placeholder="Your assigned number"
-        />
-      </div>
+        <div className="lobby-warning">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+          <span>Secret Identity Warning: Keep your player number private. Anyone who enters it can see your role.</span>
+        </div>
 
-      <div className="form-group">
-        <label htmlFor="displayName">Display Name (optional, local only)</label>
-        <input
-          id="displayName"
-          type="text"
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
-          placeholder="Your name"
-          maxLength={30}
-        />
-      </div>
+        <div className="lobby-form">
+          <div className="lobby-field">
+            <label htmlFor="roomCode">Room Code <span className="lobby-shared-badge">Shared</span></label>
+            <input
+              id="roomCode"
+              type="text"
+              value={roomCode}
+              onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+              placeholder="e.g., GAME123"
+              maxLength={20}
+              autoComplete="off"
+            />
+          </div>
 
-      {error && <div className="error-message">{error}</div>}
+          <div className="lobby-field">
+            <label htmlFor="numPlayers">Number of Players</label>
+            <input
+              id="numPlayers"
+              type="number"
+              value={numPlayers}
+              onChange={(e) => setNumPlayers(e.target.value)}
+              min="4"
+              max="20"
+            />
+          </div>
 
-      <button className="join-button" onClick={handleJoin}>
-        Join Room
-      </button>
+          <div className="lobby-field">
+            <label htmlFor="playerNumber">
+              Your Player Number <span className="lobby-private-badge">Private</span>
+            </label>
+            <input
+              id="playerNumber"
+              type="number"
+              value={playerNumber}
+              onChange={(e) => setPlayerNumber(e.target.value)}
+              min="1"
+              max={numPlayers}
+              placeholder="Your assigned number"
+            />
+          </div>
 
-      <div className="info-box">
-        <strong>How to assign player numbers privately:</strong>
-        <ul>
-          <li>Use folded paper slips with numbers written inside</li>
-          <li>Have players draw numbers from a hat</li>
-          <li>Use a separate app to assign numbers secretly</li>
-        </ul>
+          <div className="lobby-field">
+            <label htmlFor="displayName">Display Name <span className="lobby-optional-badge">Optional</span></label>
+            <input
+              id="displayName"
+              type="text"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              placeholder="Your name"
+              maxLength={30}
+              autoComplete="off"
+            />
+          </div>
+        </div>
+
+        {error && <div className="lobby-error">{error}</div>}
+
+        <button className="arcade-btn arcade-btn-gold lobby-join-btn" onClick={handleJoin}>
+          JOIN ROOM
+        </button>
+
+        <div className="lobby-info">
+          <strong>How to assign player numbers privately:</strong>
+          <ul>
+            <li>Use folded paper slips with numbers written inside</li>
+            <li>Have players draw numbers from a hat</li>
+            <li>Use a separate app to assign numbers secretly</li>
+          </ul>
+        </div>
       </div>
     </div>
   );

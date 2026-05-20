@@ -1,13 +1,29 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Georgia', 'Times New Roman', system-ui, -apple-system, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color: #213547;
-  background-color: #ffffff;
+  color: rgba(255, 255, 255, 0.9);
+  background-color: #0a0a1a;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+
+  --color-bg-dark: #0a0a1a;
+  --color-bg-surface: rgba(20, 15, 35, 0.85);
+  --color-gold: #FFD700;
+  --color-purple: #9B59B6;
+  --color-cyan: #00E5FF;
+  --color-teal: #00BFA5;
+  --color-crimson: #EF5350;
+  --color-glass: rgba(255, 255, 255, 0.05);
+  --color-glass-border: rgba(255, 255, 255, 0.12);
+
+  --role-badshah: #FFD700;
+  --role-wazir: #00BFA5;
+  --role-chor: #EF5350;
+  --role-sipahi: #00E5FF;
 }
 
 * {
@@ -18,10 +34,13 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--color-bg-dark);
 }
 
 #root {
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -31,6 +50,7 @@ h1, h2, h3, h4, h5, h6 {
 button {
   font-family: inherit;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 input, select, textarea {
@@ -39,10 +59,52 @@ input, select, textarea {
 
 a {
   font-weight: 500;
-  color: #007bff;
+  color: var(--color-cyan);
   text-decoration: none;
 }
 
 a:hover {
   text-decoration: underline;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal {
+  background: rgba(20, 15, 35, 0.95);
+  border: 1px solid var(--color-glass-border);
+  border-radius: 16px;
+  padding: 28px 24px;
+  max-width: 400px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 40px rgba(155, 89, 182, 0.08);
+}
+
+.modal h2 {
+  margin-top: 0;
+  text-align: center;
+  font-family: 'Georgia', serif;
+  font-weight: 800;
+  color: var(--color-gold);
+  text-shadow: 0 0 12px rgba(255, 215, 0, 0.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

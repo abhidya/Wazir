@@ -1,0 +1,231 @@
+/* HomeScreen */
+
+.homescreen {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--color-bg-dark);
+  padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+}
+
+/* Full-screen poster background */
+.homescreen-bg {
+  position: fixed;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 0;
+}
+
+/* Dark glassmorphism overlay */
+.homescreen-overlay {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(10, 10, 26, 0.55) 0%,
+    rgba(10, 10, 26, 0.80) 50%,
+    rgba(10, 10, 26, 0.95) 100%
+  );
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 1;
+}
+
+/* Loading state */
+.homescreen-loader {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  background: var(--color-bg-dark);
+}
+
+.loader-pulse {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-gold);
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+/* Content layer */
+.homescreen-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 24px 20px;
+  max-width: 500px;
+  width: 100%;
+}
+
+/* Title with neon gold glow */
+.homescreen-title {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: clamp(2.2rem, 8vw, 3.6rem);
+  font-weight: 900;
+  color: var(--color-gold);
+  text-shadow:
+    0 0 10px rgba(255, 215, 0, 0.6),
+    0 0 30px rgba(255, 215, 0, 0.4),
+    0 0 60px rgba(255, 215, 0, 0.2);
+  letter-spacing: 0.03em;
+  line-height: 1.1;
+  margin: 0 0 16px;
+  animation: title-glow 3s ease-in-out infinite alternate;
+}
+
+/* Subtitle */
+.homescreen-subtitle {
+  font-size: clamp(0.9rem, 3vw, 1.15rem);
+  font-weight: 600;
+  color: var(--color-cyan);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin: 0 0 12px;
+  text-shadow: 0 0 12px rgba(0, 229, 255, 0.35);
+}
+
+/* Tagline */
+.homescreen-tagline {
+  font-size: clamp(0.85rem, 2.5vw, 1rem);
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 36px;
+  font-style: italic;
+}
+
+/* Button stack */
+.homescreen-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 340px;
+  margin: 0 auto;
+}
+
+/* ─── Arcade Button System ─── */
+
+.arcade-btn {
+  display: block;
+  width: 100%;
+  padding: 16px 24px;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.2s ease, background 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 52px;
+}
+
+.arcade-btn:active {
+  transform: scale(0.97);
+}
+
+.arcade-btn-gold {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #1a0a00;
+  border-color: var(--color-gold);
+  box-shadow: 0 0 18px rgba(255, 215, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.arcade-btn-gold:hover {
+  box-shadow: 0 0 28px rgba(255, 215, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.arcade-btn-teal {
+  background: linear-gradient(135deg, #00BFA5, #00897B);
+  color: #fff;
+  border-color: var(--color-teal);
+  box-shadow: 0 0 14px rgba(0, 191, 165, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.arcade-btn-teal:hover {
+  box-shadow: 0 0 22px rgba(0, 191, 165, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.arcade-btn-purple {
+  background: linear-gradient(135deg, #9B59B6, #7B1FA2);
+  color: #fff;
+  border-color: var(--color-purple);
+  box-shadow: 0 0 14px rgba(155, 89, 182, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.arcade-btn-purple:hover {
+  box-shadow: 0 0 22px rgba(155, 89, 182, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.arcade-btn-ghost {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.75);
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: none;
+}
+
+.arcade-btn-ghost:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.1);
+}
+
+/* Footer */
+.homescreen-footer {
+  position: relative;
+  z-index: 2;
+  margin-top: auto;
+  padding: 16px 20px;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.35);
+  text-align: center;
+  letter-spacing: 0.04em;
+}
+
+/* ─── Animations ─── */
+
+@keyframes title-glow {
+  0% {
+    text-shadow:
+      0 0 10px rgba(255, 215, 0, 0.6),
+      0 0 30px rgba(255, 215, 0, 0.4),
+      0 0 60px rgba(255, 215, 0, 0.2);
+  }
+  100% {
+    text-shadow:
+      0 0 16px rgba(255, 215, 0, 0.8),
+      0 0 40px rgba(255, 215, 0, 0.5),
+      0 0 80px rgba(255, 215, 0, 0.3);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .homescreen-title {
+    animation: none;
+  }
+  .loader-pulse {
+    animation: none;
+    opacity: 0.7;
+  }
+  .arcade-btn {
+    transition: none;
+  }
+}

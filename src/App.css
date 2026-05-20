@@ -1,7 +1,9 @@
 .app {
   position: relative;
   min-height: 100vh;
+  min-height: 100dvh;
   padding-bottom: 60px;
+  background: var(--color-bg-dark);
 }
 
 .settings-toggle {
@@ -9,15 +11,20 @@
   top: 10px;
   right: 10px;
   padding: 10px 15px;
-  background: #f8f9fa;
-  border: 2px solid #ddd;
+  background: var(--color-glass);
+  border: 1px solid var(--color-glass-border);
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
   z-index: 100;
-  transition: background 0.2s;
+  transition: background 0.2s, border-color 0.2s;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .settings-toggle:hover {
-  background: #e9ecef;
+  background: rgba(155, 89, 182, 0.15);
+  border-color: var(--color-purple);
+  color: #fff;
 }
