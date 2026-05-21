@@ -7,6 +7,7 @@ import HowToPlay from "./components/HowToPlay";
 import OnlineRoomSetup from "./components/OnlineRoomSetup";
 import OnlineLobby from "./components/OnlineLobby";
 import OnlineGame from "./components/OnlineGame";
+import { MSG } from "./network/PeerJsRoomTransport";
 import { saveGameMode } from "./utils/storage";
 import "./App.css";
 
@@ -46,6 +47,8 @@ function App() {
   const [prefilledRoom, setPrefilledRoom] = useState(initialOnline.prefilledRoom);
   const [transport, setTransport] = useState(null);
   const [onlineInfo, setOnlineInfo] = useState(null);
+  const [initialOnlineGameState, setInitialOnlineGameState] = useState(null);
+  const [pendingPrivateRole, setPendingPrivateRole] = useState(null);
 
   const handlePlayNow = useCallback(() => {
     setLobbyMode("join");
@@ -86,6 +89,8 @@ function App() {
   const handleOnlineConnected = useCallback((newTransport, info) => {
     setTransport(newTransport);
     setOnlineInfo(info);
+    setInitialOnlineGameState(null);
+    setPendingPrivateRole(null);
     setOnlineScreen("lobby");
   }, []);
 
@@ -95,12 +100,49 @@ function App() {
     }
     setTransport(null);
     setOnlineInfo(null);
+    setInitialOnlineGameState(null);
+    setPendingPrivateRole(null);
     setOnlineScreen("setup");
   }, [transport]);
 
-  const handleStartOnlineGame = useCallback(() => {
+  const handleStartOnlineGame = useCallback((payload) => {
+    if (onlineInfo?.isHost) {
+      // Host clicked START GAME from lobby
+      const roster = Array.isArray(payload) ? payload : transport.roster;
+      const roundRoster = roster
+        .filter((p) => p.connected)
+        .sort((a, b) => a.seatNumber - b.seatNumber);
+
+      if (roundRoster.length < 4) return;
+
+      const scoreboardByClientId = {};
+      for (const player of roundRoster) {
+        scoreboardByClientId[player.clientId] = 0;
+      }
+
+      const startState = {
+        mode: "peer",
+        roomCode: onlineInfo.roomCode,
+        hostClientId: onlineInfo.clientId,
+        roundNumber: 1,
+        phase: "secretReveal",
+        roster,
+        roundRoster,
+        scoreboardByClientId,
+      };
+
+      transport.setPublicState(startState);
+      transport.broadcast({ type: MSG.GAME_STARTED, ...startState });
+
+      setInitialOnlineGameState(startState);
+      setOnlineScreen("game");
+      return;
+    }
+
+    // Client path: received GAME_STARTED / PUBLIC_STATE from lobby listener
+    setInitialOnlineGameState(payload);
     setOnlineScreen("game");
-  }, []);
+  }, [onlineInfo, transport]);
 
   const handleLeaveOnline = useCallback(() => {
     if (transport) {
@@ -108,6 +150,8 @@ function App() {
     }
     setTransport(null);
     setOnlineInfo(null);
+    setInitialOnlineGameState(null);
+    setPendingPrivateRole(null);
     setOnlineScreen(null);
     setScreen("home");
   }, [transport]);
@@ -201,6 +245,7 @@ function App() {
           transport={transport}
           onlineInfo={onlineInfo}
           onStartGame={handleStartOnlineGame}
+          onPrivateRole={setPendingPrivateRole}
           onBack={handleOnlineLobbyBack}
         />
       )}
@@ -209,6 +254,8 @@ function App() {
         <OnlineGame
           transport={transport}
           onlineInfo={onlineInfo}
+          initialState={initialOnlineGameState}
+          initialPrivateRole={pendingPrivateRole}
           onLeave={handleLeaveOnline}
         />
       )}

@@ -3,7 +3,7 @@ import { MSG } from "../network/PeerJsRoomTransport";
 import { saveOnlineRoomSnapshot } from "../utils/storage";
 import "./OnlineLobby.css";
 
-function OnlineLobby({ transport, onlineInfo, onStartGame, onBack }) {
+function OnlineLobby({ transport, onlineInfo, onStartGame, onPrivateRole, onBack }) {
   const [roster, setRoster] = useState(transport.roster);
   const [statusMessage, setStatusMessage] = useState("");
 
@@ -13,11 +13,30 @@ function OnlineLobby({ transport, onlineInfo, onStartGame, onBack }) {
   const canStart = isHost && connectedCount >= 4;
 
   useEffect(() => {
-    transport.onRosterChange((newRoster) => {
+    const offMessage = transport.onMessage((data) => {
+      if (!data || !data.type) return;
+
+      if (data.type === MSG.GAME_STARTED) {
+        onStartGame(data);
+        return;
+      }
+
+      if (data.type === MSG.PUBLIC_STATE && data.phase && data.phase !== "lobby") {
+        onStartGame(data);
+        return;
+      }
+
+      if (data.type === MSG.PRIVATE_ROLE) {
+        onPrivateRole?.(data);
+        return;
+      }
+    });
+
+    const offRoster = transport.onRosterChange((newRoster) => {
       setRoster([...newRoster]);
     });
 
-    transport.onStatusChange((status) => {
+    const offStatus = transport.onStatusChange((status) => {
       if (status === "disconnected") {
         setStatusMessage("Connection lost. Attempting to reconnect...");
       } else if (status === "host_disconnected") {
@@ -25,14 +44,12 @@ function OnlineLobby({ transport, onlineInfo, onStartGame, onBack }) {
       }
     });
 
-  transport.onMessage(() => {
-    // Messages during lobby phase are handled at App level if needed
-  });
-
     return () => {
-      // Transport cleanup handled by parent
+      offMessage?.();
+      offRoster?.();
+      offStatus?.();
     };
-  }, [transport]);
+  }, [transport, onStartGame, onPrivateRole]);
 
   useEffect(() => {
     saveOnlineRoomSnapshot(roomCode, {

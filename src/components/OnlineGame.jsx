@@ -27,19 +27,21 @@ const ROLE_COLORS = {
   SIPAHI: "cyan",
 };
 
-function OnlineGame({ transport, onlineInfo, onLeave }) {
+function OnlineGame({ transport, onlineInfo, initialState, initialPrivateRole, onLeave }) {
   const { roomCode, clientId, displayName, isHost } = onlineInfo;
 
-  const [phase, setPhase] = useState(PHASES.SECRET_REVEAL);
-  const [roundNumber, setRoundNumber] = useState(1);
-  const [roster, setRoster] = useState(transport.roster);
+  const [phase, setPhase] = useState(initialState?.phase || PHASES.SECRET_REVEAL);
+  const [roundNumber, setRoundNumber] = useState(initialState?.roundNumber || 1);
+  const [roster, setRoster] = useState(initialState?.roster || transport.roster);
   const [roleRevealed, setRoleRevealed] = useState(false);
-  const [explicitRole, setExplicitRole] = useState(null);
+  const [explicitRole, setExplicitRole] = useState(initialPrivateRole?.role || null);
   const [wazirGuessClientId, setWazirGuessClientId] = useState(null);
   const [showWazirGuessConfirm, setShowWazirGuessConfirm] = useState(false);
   const [selectedOutcome, setSelectedOutcome] = useState(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [scoreboardByClientId, setScoreboardByClientId] = useState({});
+  const [scoreboardByClientId, setScoreboardByClientId] = useState(
+    initialState?.scoreboardByClientId || {},
+  );
   const [lastDeltas, setLastDeltas] = useState(null);
   const [lastOutcome, setLastOutcome] = useState(null);
   const [statusMessage, setStatusMessage] = useState("");
@@ -133,11 +135,40 @@ function OnlineGame({ transport, onlineInfo, onLeave }) {
         });
       }
     },
-    [isHost, roomCode, transport, buildRoundRoster],
-  );
+  [isHost, roomCode, transport, buildRoundRoster],
+);
 
-  // ─── Host Phase Control ──────────────────────────────────────────────
-  // Only the host advances phases. Clients update from PUBLIC_STATE messages.
+// ─── Host: Send initial private roles on mount ───────────────────────
+const initialRolesSentRef = useRef(false);
+useEffect(() => {
+  if (!isHost) return;
+  if (initialRolesSentRef.current) return;
+  if (roundNumber !== 1) return;
+  const connected = roster.filter((p) => p.connected);
+  if (connected.length < 4) return;
+  initialRolesSentRef.current = true;
+
+  const roundRoster = buildRoundRoster(roster);
+  const roles = generateRoles(roomCode, 1, roundRoster.length);
+  for (const player of roundRoster) {
+    const idx = roundRoster.findIndex((p) => p.clientId === player.clientId);
+    if (idx === -1 || player.isHost) continue;
+    transport.sendToClient(player.clientId, {
+      type: MSG.PRIVATE_ROLE,
+      roundNumber: 1,
+      role: roles[idx],
+    });
+  }
+
+  broadcastPublicState({
+    phase: PHASES.SECRET_REVEAL,
+    roundNumber: 1,
+    scoreboardByClientId: stateRef.current.scoreboardByClientId,
+  });
+}, [isHost, roundNumber, roster, buildRoundRoster, roomCode, transport, broadcastPublicState, scoreboardByClientId]);
+
+// ─── Host Phase Control ──────────────────────────────────────────────
+// Only the host advances phases. Clients update from PUBLIC_STATE messages.
 
   const advanceToPhase = useCallback(
     (newPhase, newRound) => {

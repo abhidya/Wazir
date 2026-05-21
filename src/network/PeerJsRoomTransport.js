@@ -29,6 +29,7 @@ export const MSG = {
   JOIN_ACCEPT: "JOIN_ACCEPT",
   JOIN_REJECT: "JOIN_REJECT",
   ROSTER_UPDATE: "ROSTER_UPDATE",
+  GAME_STARTED: "GAME_STARTED",
   PUBLIC_STATE: "PUBLIC_STATE",
   PRIVATE_ROLE: "PRIVATE_ROLE",
   WAZIR_GUESS: "WAZIR_GUESS",
@@ -103,13 +104,12 @@ export class PeerJsRoomTransport {
     this._nextSeat = 1;
     this._destroyed = false;
 
-    this._onMessage = null;
-    this._onRosterChange = null;
-    this._onStatusChange = null;
+    this._messageListeners = new Set();
+    this._rosterListeners = new Set();
+    this._statusListeners = new Set();
 
     this._messageBuffer = [];
     this._rosterBuffer = null;
-    this._callbacksReady = false;
 
     this._pingInterval = null;
 
@@ -118,31 +118,37 @@ export class PeerJsRoomTransport {
     this._joinTimeout = null;
   }
 
-  // ─── Callback Registration ─────────────────────────────────────────
+  // ─── Callback Registration (multi-listener) ───────────────────────
 
   onMessage(cb) {
-    this._onMessage = cb;
-    this._callbacksReady = true;
+    this._messageListeners.add(cb);
+    // Replay buffered messages to this new listener
     if (this._messageBuffer.length > 0) {
       const buffer = this._messageBuffer;
       this._messageBuffer = [];
       for (const data of buffer) {
-        if (this._onMessage) this._onMessage(data);
+        cb(data);
       }
     }
+    return () => { this._messageListeners.delete(cb); };
   }
 
   onRosterChange(cb) {
-    this._onRosterChange = cb;
+    this._rosterListeners.add(cb);
+    // Call with current roster if available
     if (this._rosterBuffer !== null) {
       const roster = this._rosterBuffer;
       this._rosterBuffer = null;
-      if (this._onRosterChange) this._onRosterChange(roster);
+      cb(roster);
+    } else if (this._roster.length > 0) {
+      cb(this.roster);
     }
+    return () => { this._rosterListeners.delete(cb); };
   }
 
   onStatusChange(cb) {
-    this._onStatusChange = cb;
+    this._statusListeners.add(cb);
+    return () => { this._statusListeners.delete(cb); };
   }
 
   // ─── Host Operations ───────────────────────────────────────────────
@@ -549,8 +555,10 @@ export class PeerJsRoomTransport {
   // ─── Notification Helpers ───────────────────────────────────────────
 
   _notifyMessage(data) {
-    if (this._onMessage) {
-      this._onMessage(data);
+    if (this._messageListeners.size > 0) {
+      for (const cb of this._messageListeners) {
+        cb(data);
+      }
     } else {
       this._messageBuffer.push(data);
     }
@@ -558,15 +566,19 @@ export class PeerJsRoomTransport {
 
   _notifyRosterChange() {
     const rosterCopy = this.roster;
-    if (this._onRosterChange) {
-      this._onRosterChange(rosterCopy);
+    if (this._rosterListeners.size > 0) {
+      for (const cb of this._rosterListeners) {
+        cb(rosterCopy);
+      }
     } else {
       this._rosterBuffer = rosterCopy;
     }
   }
 
   _notifyStatusChange(status) {
-    if (this._onStatusChange) this._onStatusChange(status);
+    for (const cb of this._statusListeners) {
+      cb(status);
+    }
   }
 
   // ─── Cleanup ────────────────────────────────────────────────────────
