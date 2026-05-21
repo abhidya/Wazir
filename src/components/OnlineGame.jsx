@@ -138,34 +138,37 @@ function OnlineGame({ transport, onlineInfo, initialState, initialPrivateRole, o
   [isHost, roomCode, transport, buildRoundRoster],
 );
 
-// ─── Host: Send initial private roles on mount ───────────────────────
-const initialRolesSentRef = useRef(false);
-useEffect(() => {
-  if (!isHost) return;
-  if (initialRolesSentRef.current) return;
-  if (roundNumber !== 1) return;
-  const connected = roster.filter((p) => p.connected);
-  if (connected.length < 4) return;
-  initialRolesSentRef.current = true;
+  // ─── Host: Send initial private roles on mount ───────────────────────
+  // Uses minimal deps + ref guard to prevent re-triggering.
+  // Reads roster/scoreboard via stateRef to avoid dep-array churn.
+  const initialRolesSentRef = useRef(false);
+  useEffect(() => {
+    if (!isHost) return;
+    if (initialRolesSentRef.current) return;
+    if (roundNumber !== 1) return;
+    const currentRoster = stateRef.current.roster || roster;
+    const connected = currentRoster.filter((p) => p.connected);
+    if (connected.length < 4) return;
+    initialRolesSentRef.current = true;
 
-  const roundRoster = buildRoundRoster(roster);
-  const roles = generateRoles(roomCode, 1, roundRoster.length);
-  for (const player of roundRoster) {
-    const idx = roundRoster.findIndex((p) => p.clientId === player.clientId);
-    if (idx === -1 || player.isHost) continue;
-    transport.sendToClient(player.clientId, {
-      type: MSG.PRIVATE_ROLE,
+    const roundRoster = [...connected].sort((a, b) => a.seatNumber - b.seatNumber);
+    const roles = generateRoles(roomCode, 1, roundRoster.length);
+    for (const player of roundRoster) {
+      const idx = roundRoster.findIndex((p) => p.clientId === player.clientId);
+      if (idx === -1 || player.isHost) continue;
+      transport.sendToClient(player.clientId, {
+        type: MSG.PRIVATE_ROLE,
+        roundNumber: 1,
+        role: roles[idx],
+      });
+    }
+
+    broadcastPublicState({
+      phase: PHASES.SECRET_REVEAL,
       roundNumber: 1,
-      role: roles[idx],
+      scoreboardByClientId: stateRef.current.scoreboardByClientId,
     });
-  }
-
-  broadcastPublicState({
-    phase: PHASES.SECRET_REVEAL,
-    roundNumber: 1,
-    scoreboardByClientId: stateRef.current.scoreboardByClientId,
-  });
-}, [isHost, roundNumber, roster, buildRoundRoster, roomCode, transport, broadcastPublicState, scoreboardByClientId]);
+  }, [isHost, roundNumber, roomCode, transport, broadcastPublicState]); // eslint-disable-line react-hooks/exhaustive-deps
 
 // ─── Host Phase Control ──────────────────────────────────────────────
 // Only the host advances phases. Clients update from PUBLIC_STATE messages.
@@ -206,10 +209,10 @@ useEffect(() => {
   }, [myRole, isHost, advanceToPhase]);
 
   // Host-only: Continue button when non-WAZIR host sees bluff
-  // (All players see bluff; host clicks Continue to advance)
+  // Advances to WAZIR_GUESS so the WAZIR (client or host) can guess
   const handleHostContinue = useCallback(() => {
     if (!isHost) return;
-    advanceToPhase(PHASES.POST_ROUND);
+    advanceToPhase(PHASES.WAZIR_GUESS);
   }, [isHost, advanceToPhase]);
 
   const handleWazirGuessSelect = useCallback((cId) => {
@@ -361,12 +364,23 @@ useEffect(() => {
 
   // ─── Message Handler ──────────────────────────────────────────────────
   // Clients ONLY update phase from PUBLIC_STATE, ROUND_APPLIED, SKIP_ROUND, PRIVATE_ROLE.
+  // Uses refs for callbacks to keep deps stable and prevent re-register → message replay loops.
+
+  const buildRoundRosterRef = useRef(buildRoundRoster);
+  const displayNameOfRef = useRef(displayNameOf);
+  const broadcastPublicStateRef = useRef(broadcastPublicState);
+  useEffect(() => {
+    buildRoundRosterRef.current = buildRoundRoster;
+    displayNameOfRef.current = displayNameOf;
+    broadcastPublicStateRef.current = broadcastPublicState;
+  });
 
   useEffect(() => {
-    transport.onMessage((data) => {
+    const offMessage = transport.onMessage((data) => {
       if (!data || !data.type) return;
 
       if (data.type === MSG.PUBLIC_STATE) {
+        const isNewRound = data.roundNumber && data.roundNumber !== stateRef.current.roundNumber;
         if (data.roundNumber) setRoundNumber(data.roundNumber);
         if (data.phase) setPhase(data.phase);
         if (data.scoreboardByClientId) setScoreboardByClientId(data.scoreboardByClientId);
@@ -374,10 +388,10 @@ useEffect(() => {
         if (data.wazirGuessLocked) {
           setWazirGuessLocked(true);
           if (data.wazirGuesserClientId) {
-            setWazirGuesserName(displayNameOf(data.wazirGuesserClientId));
+            setWazirGuesserName(displayNameOfRef.current(data.wazirGuesserClientId));
           }
         }
-        if (data.phase === PHASES.SECRET_REVEAL) {
+        if (data.phase === PHASES.SECRET_REVEAL && isNewRound) {
           setRoleRevealed(false);
           setWazirGuessClientId(null);
           setExplicitRole(null);
@@ -394,12 +408,12 @@ useEffect(() => {
         if (data.scoreboardByClientId) setScoreboardByClientId(data.scoreboardByClientId);
         if (data.outcome) setLastOutcome(data.outcome);
         if (data.deltasByClientId) {
-          const roundRoster = buildRoundRoster();
+          const roundRoster = buildRoundRosterRef.current();
           const roles = generateRoles(roomCode, data.roundNumber, roundRoster.length);
           const summary = Object.entries(data.deltasByClientId).map(([cId, delta]) => {
             const idx = roundRoster.findIndex((p) => p.clientId === cId);
             const role = idx >= 0 ? roles[idx] : "?";
-            return { clientId: cId, displayName: displayNameOf(cId), role, delta };
+            return { clientId: cId, displayName: displayNameOfRef.current(cId), role, delta };
           });
           setLastDeltas(summary);
         }
@@ -421,28 +435,28 @@ useEffect(() => {
         setWazirGuesserName("");
       }
 
-      if (data.type === MSG.WAZIR_GUESS && isHost) {
-        // Host received a client's WAZIR guess
-        setWazirGuessLocked(true);
-        setWazirGuesserName(displayNameOf(data.clientId));
-        broadcastPublicState({
-          wazirGuessLocked: true,
-          wazirGuesserClientId: data.clientId,
-          phase: PHASES.POST_ROUND,
-        });
-        setPhase(PHASES.POST_ROUND);
-      }
+          if (data.type === MSG.WAZIR_GUESS && isHost) {
+            setWazirGuessLocked(true);
+            setWazirGuesserName(displayNameOfRef.current(data.clientId));
+            setWazirGuessClientId(data.guessClientId);
+            broadcastPublicStateRef.current({
+              wazirGuessLocked: true,
+              wazirGuesserClientId: data.clientId,
+              phase: PHASES.POST_ROUND,
+            });
+            setPhase(PHASES.POST_ROUND);
+          }
 
       if (data.type === MSG.PLAYER_READY) {
         // Future: track ready state per round. For v1, host has Continue buttons.
       }
     });
 
-    transport.onRosterChange((newRoster) => {
+    const offRoster = transport.onRosterChange((newRoster) => {
       setRoster([...newRoster]);
     });
 
-    transport.onStatusChange((status) => {
+    const offStatus = transport.onStatusChange((status) => {
       if (status === "disconnected") {
         setStatusMessage("Connection lost. Attempting to reconnect...");
       } else if (status === "host_disconnected") {
@@ -451,7 +465,13 @@ useEffect(() => {
         setStatusMessage("");
       }
     });
-  }, [transport, isHost, roomCode, buildRoundRoster, displayNameOf, broadcastPublicState]);
+
+    return () => {
+      offMessage();
+      offRoster();
+      offStatus();
+    };
+  }, [transport, isHost, roomCode]);
 
   const roleColor = ROLE_COLORS[myRole] || "cyan";
 
@@ -558,14 +578,14 @@ useEffect(() => {
               {myRole === "CHOR" && "Blend in. Act like a SIPAHI."}
               {myRole === "SIPAHI" && "Watch and observe. Help the WAZEER."}
             </p>
-            {isHost && (
-              <button
-                className="arcade-btn arcade-btn-gold"
-                onClick={isWazir ? handleStartGuess : handleHostContinue}
-              >
-                {isWazir ? "MAKE YOUR GUESS" : "END ROUND"}
-              </button>
-            )}
+        {isHost && (
+          <button
+            className="arcade-btn arcade-btn-gold"
+            onClick={isWazir ? handleStartGuess : handleHostContinue}
+          >
+            {isWazir ? "MAKE YOUR GUESS" : "PASS TO WAZIR"}
+          </button>
+        )}
             {!isHost && (
               <div className="online-game-waiting-next">
                 <p>Waiting for host to advance...</p>

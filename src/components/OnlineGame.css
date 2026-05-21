@@ -20,7 +20,7 @@
   z-index: 0;
 }
 
-.online-game > *:not(.online-game-bg) {
+.online-game > *:not(.online-game-bg):not(.online-game-scoreboard-mini) {
   position: relative;
   z-index: 1;
 }

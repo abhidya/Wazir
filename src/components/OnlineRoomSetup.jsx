@@ -96,9 +96,9 @@ function OnlineRoomSetup({ mode, prefilledRoom, onConnected, onBack }) {
 
         <div className="online-setup-form">
           <div className="online-setup-field">
-            <label htmlFor="onlineRoomCode">Room Code</label>
-            <input
-              id="onlineRoomCode"
+        <label htmlFor="room-code">Room Code</label>
+        <input
+          id="room-code"
               type="text"
               value={roomCode}
               onChange={(e) => setRoomCode(e.target.value.toUpperCase().replace(/[^A-Z0-9\-_]/g, ""))}
@@ -110,9 +110,9 @@ function OnlineRoomSetup({ mode, prefilledRoom, onConnected, onBack }) {
           </div>
 
           <div className="online-setup-field">
-            <label htmlFor="onlineName">Your Name</label>
-            <input
-              id="onlineName"
+        <label htmlFor="display-name">Your Name</label>
+        <input
+          id="display-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
